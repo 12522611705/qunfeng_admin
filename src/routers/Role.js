@@ -23,8 +23,7 @@ class component extends Component{
         this.update = update.bind(this);
         this.state = {
             Modal:{
-                visMenu:false,
-                visUser:false
+                visMenu:false
             },
             record:{},
             // 表格数据
@@ -68,16 +67,17 @@ class component extends Component{
                             }}>删除</a>
                             <Divider type="vertical" />
                             <a href="javascript:;" onClick={()=>{
-                               _this.update('set',addons(_this.state,{
-                                    Modal:{visMenu:{$set:true}}
-                               }))
+                                Ajax.get({
+                                    url:config.JurisdictionAdmin.urls.listAll,
+                                    params:{},
+                                    success:(data)=>{
+                                        _this.update('set',addons(_this.state,{
+                                            Modal:{visMenu:{$set:true}},
+                                            treeData:{$set:data}
+                                       }))
+                                    }
+                                })
                             }}>菜单管理</a>
-                            <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                               _this.update('set',addons(_this.state,{
-                                    Modal:{visUser:{$set:true}}
-                               }))
-                            }}>用户关联</a>
                         </span>
                     )},
 
@@ -85,9 +85,9 @@ class component extends Component{
                 data:[]
             },
             menuTree:{
-                checkedKeys:[],
-                selectedKeys:[]
-            }
+                checkedKeys:[]
+            },
+            treeData:[]
         }
     }
     componentDidMount(){
@@ -130,57 +130,64 @@ class component extends Component{
             }
         })
     }
-    renderMenuTreeNodes(data){
-        return data.map((item)=>{
+    /**
+     * @desc   树列表递归
+     * @date   2019-04-09
+     * @author luozhou
+     * @param  {String} data    数组
+     * @param  {String} i       key值
+     */
+    // renderMenuTreeNodes(data,i){
+    //     return data.map((item,index)=>{
+    //         item.key = index;
+    //         if (item.children) {
+    //             return (
+    //                 <Tree.TreeNode id={item.id} title={item.menuName} key={item.key} dataRef={item}>
+    //                     {this.renderMenuTreeNodes(item.children,item.key)}
+    //                 </Tree.TreeNode>
+    //             );
+    //         }
+    //         return <Tree.TreeNode id={item.id} key={i>=0 ? (i+'-'+index) : index} title={item.menuName} />;
+    //     })
+    // }
+    renderMenuTreeNodes(data,i){
+        return data.map((item,index)=>{
             if (item.children) {
                 return (
-                    <Tree.TreeNode title={item.title} key={item.key} dataRef={item}>
+                    <Tree.TreeNode id={item.id} title={item.menuName} key={item.key} dataRef={item}>
                         {this.renderMenuTreeNodes(item.children)}
                     </Tree.TreeNode>
                 );
             }
-            return <Tree.TreeNode {...item} />;
+            return <Tree.TreeNode id={item.id} key={item.key} title={item.menuName} />;
         })
+    }
+    /**
+     * @desc   通过keys获取data里面的对应的id集合
+     * @date   2019-04-09
+     * @author luozhou
+     * @param  {String} keys    数组
+     * @param  {String} data    数组
+     */
+    getKeysByIds(data,keys){
+        let ids = [];
+        const fn = (data,keys)=>{
+            data.map((el)=>{
+                if(keys.indexOf(el.key)>=0){
+                    ids.push(el.id)
+                }
+                if(el.children){
+                    fn(el.children,keys)
+                }
+            })
+        }
+        fn(data,keys);
+        return ids;
     }
     render(){
         const _this = this;
         const state = _this.state;
         const update = _this.update;
-        const treeData = [{
-            title: '0-0',
-            key: '0-0',
-            children: [{
-                title: '0-0-0',
-                key: '0-0-0',
-                children: [
-                    { title: '0-0-0-0', key: '0-0-0-0' },
-                    { title: '0-0-0-1', key: '0-0-0-1' },
-                    { title: '0-0-0-2', key: '0-0-0-2' },
-                ],
-            }, {
-                title: '0-0-1',
-                key: '0-0-1',
-                children: [
-                    { title: '0-0-1-0', key: '0-0-1-0' },
-                    { title: '0-0-1-1', key: '0-0-1-1' },
-                    { title: '0-0-1-2', key: '0-0-1-2' },
-                ],
-            }, {
-                title: '0-0-2',
-                key: '0-0-2',
-            }],
-        }, {
-            title: '0-1',
-            key: '0-1',
-            children: [
-                { title: '0-1-0-0', key: '0-1-0-0' },
-                { title: '0-1-0-1', key: '0-1-0-1' },
-                { title: '0-1-0-2', key: '0-1-0-2' },
-            ],
-        }, {
-            title: '0-2',
-            key: '0-2',
-        }];
         return (
             <div className="content">
                 <Breadcrumb>
@@ -192,79 +199,51 @@ class component extends Component{
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <Modal title="菜单管理"
-                   onOk={()=>{
-                        
-                   }}
                    onCancel={()=>{
                         update('set',addons(state,{Modal:{visMenu:{$set:false}}}))
                    }}
-                   okText="确认"
-                   cancelText="取消"
+                   footer={[
+                    <Button onClick={()=>{
+                        Ajax.post({
+                            url:config.RoleAdmin.urls.addRoleToAdminUser,
+                            params:{
+                                ids:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys)
+                            },
+                            success:(data)=>{
+                                _this.initIndex();
+                            }
+                        })
+                    }} type="primary" key="1">关联到用户</Button>,
+                    <Button onClick={()=>{
+                        Ajax.post({
+                            url:config.RoleAdmin.urls.addMenuToRole,
+                            params:{
+                                ids:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys)
+                            },
+                            success:(data)=>{
+                                _this.initIndex();
+                            }
+                        })
+                    }} type="primary" key="2">菜单权限</Button>
+                   ]}
                    visible={state.Modal.visMenu}>
                         <Tree
-                        checkable
-                        autoExpandParent={true}
-                        onCheck={(checkedKeys)=>{
-                            update('set',addons(state,{
-                                menuTree:{
-                                    checkedKeys:{
-                                        $set:checkedKeys
+                            checkable
+                            autoExpandParent={true}
+                            onCheck={(checkedKeys,checkedNodes)=>{
+                                update('set',addons(state,{
+                                    menuTree:{
+                                        checkedKeys:{
+                                            $set:checkedKeys
+                                        }
                                     }
-                                }
-                            }))
-                        }}
-                        checkedKeys={state.menuTree.checkedKeys}
-                        onSelect={(selectedKeys)=>{
-                            update('set',addons(state,{
-                                menuTree:{
-                                    selectedKeys:{
-                                        $set:selectedKeys
-                                    }
-                                }
-                            }))
-                        }}
-                        selectedKeys={state.menuTree.selectedKeys}
-                      >
-                        {_this.renderMenuTreeNodes(treeData)}
+                                }))
+                            }}
+                            checkedKeys={state.menuTree.checkedKeys}>
+                            {_this.renderMenuTreeNodes(state.treeData)}
                       </Tree>
                 </Modal>
-                <Modal title="用户关联"
-                   onOk={()=>{
-                        
-                   }}
-                   onCancel={()=>{
-                        update('set',addons(state,{Modal:{visUser:{$set:false}}}))
-                   }}
-                   okText="确认"
-                   cancelText="取消"
-                   visible={state.Modal.visUser}>
-                        <Tree
-                        checkable
-                        autoExpandParent={true}
-                        onCheck={(checkedKeys)=>{
-                            update('set',addons(state,{
-                                menuTree:{
-                                    checkedKeys:{
-                                        $set:checkedKeys
-                                    }
-                                }
-                            }))
-                        }}
-                        checkedKeys={state.menuTree.checkedKeys}
-                        onSelect={(selectedKeys)=>{
-                            update('set',addons(state,{
-                                menuTree:{
-                                    selectedKeys:{
-                                        $set:selectedKeys
-                                    }
-                                }
-                            }))
-                        }}
-                        selectedKeys={state.menuTree.selectedKeys}
-                      >
-                        {_this.renderMenuTreeNodes(treeData)}
-                      </Tree>
-                </Modal>
+                
                 
             </div>
         );

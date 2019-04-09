@@ -16,7 +16,8 @@ export const config = {
 	// 权限管理
 	JurisdictionAdmin:{
 		urls:{
-			list:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/list'
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/list',
+			listAll:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/listAll'
 		}
 	},
 	// 环卫车管理
