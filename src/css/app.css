@@ -1,0 +1,332 @@
+
+@value colors: "./colors.css";
+
+@value bg333333,bgededed,co333333,co37bdb4,co999999 from colors;
+
+:global(*){
+    margin: 0;
+    padding: 0;
+}
+
+:global(body),
+:global(html) {
+    font-size: 14px;
+    color: #999;
+    /*默认字体微软雅黑*/
+    font-family: "microsoft yahei","sans-serif" !important;
+}
+
+:global(ol),
+:global(ul),
+:global(ul li) {
+    list-style: none;
+    outline: none;
+    list-style-type: none;
+}
+:global(small) {
+    font-size: 80%;
+}
+:global(p) {
+    margin: 0px;
+}
+:global(sub),
+:global(sup) {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+:global(sup) {
+    top: -0.5em;
+}
+:global(sub) {
+    bottom: -0.05em;
+}
+:global(img) {
+    border: 0;
+    vertical-align: middle;
+    display: inline-block;
+}
+:global(pre) {
+    overflow: auto;
+}
+:global(a) {
+    color: #ccc;
+    text-decoration: none;
+}
+
+:global(a:active),
+:global(a:hover),
+:global(a.hover) {
+    /*Page link to the default font color*/
+    cursor: pointer;
+}
+:global(textarea) {
+    overflow: visible;
+    text-indent: 10px;
+}
+:global(input){
+    line-height: 30px;
+}
+:global(button),
+:global(input),
+:global(select),
+:global(textarea) {
+    font-family: "microsoft yahei","sans-serif";
+    outline: 0 none;
+    border: 1px solid #ddd;
+    /*-webkit-appearance: none;*/
+    border-radius: 0;
+}
+/*去掉谷歌浏览器自带黄色背景*/
+:global(input:-webkit-autofill) {
+    -webkit-box-shadow: 0px 0px 0px 1000px white inset !important;
+}
+:global(table) {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+}
+:global(table td),
+:global(table th) {
+    vertical-align: middle;
+    border: 1px solid #ddd;
+    font-weight: normal;
+    text-align: left;
+}
+:global(input::placeholder){
+    color: #ccc;
+}
+/*
+ *  The commonly used class
+ */
+:global(.pull-left) {
+    float: left !important;
+}
+:global(.pull-right) {
+    float: right !important;
+}
+:global(.pull-none) {
+    float: none !important;
+}
+:global(.text-center) {
+    text-align: center;
+}
+:global(.text-left) {
+    text-align: left;
+}
+:global(.text-right) {
+    text-align: right;
+}
+:global(.text-nowarp) {
+    white-space: nowrap;
+}
+:global(.text-break) {
+    word-wrap: break-word;
+    word-break: break-all;
+}
+:global(.text-underline) {
+    text-decoration: underline;
+}
+:global(.text-ellipsis) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+:global(.text-bold) {
+    font-weight: bold;
+}
+:global(.relative),
+:global(.dl) {
+    position: relative;
+    zoom: 1;
+}
+:global(.absolute) {
+    position: absolute;
+    zoom: 1;
+}
+:global(.inline-block) {
+    display: inline-block;
+}
+:global(.inline) {
+    display: inline;
+}
+:global(.block) {
+    display: block;
+}
+:global(.hide) {
+    display: none;
+}
+/*Use opportunely clear float*/
+:global(.clear) {
+    clear: both;
+}
+:global(.clearfix::after),
+:global(.row::after),
+:global(.ul::after),
+:global(.ol::after),
+:global(.dl::after) {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: "";
+    clear: both;
+    height: 0;
+}
+:global(.clearfix),
+:global(.ul),
+:global(.dl),
+:global(.ol) {
+    *zoom: 1;
+}
+:global(.ul>li),
+:global(.ol>li),
+:global(.dl>dt),
+:global(.dl>dd) {
+    float: left;
+    position: relative;
+    min-height: 1px;
+}
+/*Some of the common class*/
+:global(.items),
+:global(.item-thumb),
+:global(.item-thumb-full),
+:global(.item-div),
+:global(.item-price),
+:global(.item-name),
+:global(.item-title),
+:global(.item-sub-title),
+:global(.item-text),
+:global(.item-sub-text),
+:global(.item-delprice),
+:global(.item-comment),
+:global(.item-icon),
+:global(.item-time),
+:global(.item-detail),
+:global(.item-label),
+:global(.item-btn) {
+    position: relative;
+    /*filter:alpha(opacity=100);*/
+    overflow: hidden;
+    transition: all 0.35s ease;
+    -webkit-transition: all 0.35s ease;
+}
+:global(.item-delprice) {
+    text-decoration: line-through;
+    color: #666;
+}
+:global(.item-thumb-full img) {
+    width: 100%;
+    height: 100%;
+}
+:global(.color-blue){
+    color: co37bdb4;
+}
+:global(.content){
+    height:100%;
+    width:100%;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    overflow: auto;
+}
+/*滚动条样式*/
+:global(.content::-webkit-scrollbar) {
+	/*滚动条整体样式*/
+	width: 8px;
+	/*高宽分别对应横竖滚动条的尺寸*/
+	height: 8px;
+}
+:global(.content::-webkit-scrollbar-thumb) {
+	/*滚动条里面小方块*/
+	border-radius: 5px;
+	-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+	background: rgba(0, 0, 0, 0.2);
+}
+:global(.content::-webkit-scrollbar-track) {
+	/*滚动条里面轨道*/
+	-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+	border-radius: 0;
+	background: rgba(0, 0, 0, 0.1);
+}
+:global(#root){
+    height:100%;
+}
+:global(#app){
+    height:100%;
+}
+.main{
+    height: calc(100% - 60px);
+}
+.main .left{
+    float: left;
+    width:200px;    
+    height:100%;
+    border-right: 1px solid #ddd;
+}
+.main .right{
+    margin-left: 200px;
+    height:100%;
+    padding:10px;
+    padding-right: 0px;
+}
+.toolbar{
+    height: 60px;
+    line-height: 60px;
+    border-bottom:1px solid #ddd;
+}
+.toolbar .logo{
+    width:200px;
+    text-align: center;
+    border-right: 1px solid #ddd;
+    float: left;
+}
+.toolbar .user{
+    float: right;
+    padding-right:20px;   
+}
+.toolbar .user a{
+    color:#999;;
+}
+:global(.main-toolbar){
+    margin-bottom: 20px;
+    margin-top:20px;
+}
+.login{
+    background-color: #fff;
+    position: absolute;
+    width: 100%;
+    height:100%;
+}
+.login .content{
+    width: 400px;
+    height: 300px;
+    margin: -150px 0px 0px -200px;
+    padding: 0px 20px 20px 20px;
+    border-radius: 5px;
+    border:1px solid #ddd;
+    position: absolute;
+    left: 50%;
+    top:50%;
+}
+.login .content .title{
+    border-bottom: 1px solid #ddd;
+    line-height: 50px;
+    margin: 0px -20px 30px -20px;
+    text-indent: 20px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,27 @@
+/*背景颜色*/
+@value bg999999: #999999;
+@value bg37bdb4: #37bdb4;
+@value bgf2f2f2: #f2f2f2;
+@value bgf7f7f7: #f7f7f7;
+@value bg333333: #333333;
+@value bg262626: #262626;
+@value bg4c4c4c: #4c4c4c;
+@value bgededed: #ededed;
+/*边框颜色*/
+@value bd37bdb4: #37bdb4;
+@value bde4e4e4: #e4e4e4;
+@value bdf2f2f2: #f2f2f2;
+@value bdf7f7f7: #f7f7f7;
+/*字体颜色*/
+@value co37bdb4: #37bdb4;
+@value coe54545: #e54545;
+@value co0abf5b: #0abf5b;
+@value co999999: #999999;
+@value co666666: #666666;
+@value co333333: #333333;
+
+/*
+	引用
+	@value colors: "./colors.css";
+	@value blue, red, green from colors;
+ */

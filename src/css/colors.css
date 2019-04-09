@@ -1,0 +1,13 @@
+
+/*背景颜色*/
+@value bg999999: #999999;
+
+/*边框颜色*/
+
+/*字体颜色*/
+
+/*
+	引用
+	@value colors: "./colors.css";
+	@value blue, red, green from colors;
+ */
