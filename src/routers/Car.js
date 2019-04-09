@@ -606,7 +606,7 @@ class component extends Component{
                             }
                         </Select>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label="是否在工作中" >
+                    <Form.Item {...formItemLayout} label="是否在工作中" > 
                         <Select placeholder="请选择是否在工作中" value={state.newRecord.isWord} style={{ width: '100%' }} onChange={(value)=>{
                             _this.updateNewRecord('isWord',value);
                         }}>
