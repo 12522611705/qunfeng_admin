@@ -198,7 +198,7 @@ class component extends Component{
             },
         };
         return (
-            <div>
+            <div style={{height:'100%'}}>
                 {
                     localStorage.getItem('token') ?
                     <div id="app">

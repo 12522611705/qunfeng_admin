@@ -8,6 +8,8 @@ export const config = {
 			login:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/login',
 			menuList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/menuList',
 			adminUserDetailsByToken:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserDetailsByToken',
+			adminUserList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserList',
+			deleteUser:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/deleteUser',
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/update'
 		},
 		router:{},

@@ -15,6 +15,8 @@ import Car from './routers/Car';
 import Role from './routers/Role';
 // 收运费记录
 import CollectorLog from './routers/CollectorLog';
+// 后台用户列表
+import AdminUser from './routers/AdminUser';
 
 ReactDOM.render((
 	<HashRouter>
@@ -25,6 +27,7 @@ ReactDOM.render((
 				<Route path="/Car" 							component={Car}/>
 				<Route path="/Role"							component={Role}/>
 				<Route path="/CollectorLog"					component={CollectorLog}/>
+				<Route path="/AdminUser"					component={AdminUser}/>
 	
 
 			</App>

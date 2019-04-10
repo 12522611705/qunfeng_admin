@@ -72,7 +72,9 @@ const post = (options)=>{
 	fetch(options.url,{
 	    type:'post',
 	    method:'post',
-	    body: formatSearch(params),
+	    // body: formatSearch(params),
+	    body: 'request=' + JSON.stringify(params).replace(/"/g,"'"),
+	    // body: params,
 	    headers:{
 	        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
 	        'token': localStorage.getItem('token')

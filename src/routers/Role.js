@@ -71,13 +71,27 @@ class component extends Component{
                                     url:config.JurisdictionAdmin.urls.listAll,
                                     params:{},
                                     success:(data)=>{
-                                        _this.update('set',addons(_this.state,{
-                                            Modal:{visMenu:{$set:true}},
-                                            treeData:{$set:data}
-                                       }))
+                                        Ajax.get({
+                                            url:config.RoleAdmin.urls.details,
+                                            params:{
+                                                roleId:record.id
+                                            },
+                                            success:(checkIds)=>{
+                                                let ids = [];
+                                                checkIds.forEach((el)=>{
+                                                    ids.push(el.id)
+                                                })
+                                                _this.update('set',addons(_this.state,{
+                                                    Modal:{visMenu:{$set:true}},
+                                                    treeData:{$set:data},
+                                                    menuTree:{checkedKeys:{$set:_this.getIdsByKeys(data,ids)}},
+                                                    record:{$set:record}
+                                               }))
+                                            }
+                                        })
                                     }
                                 })
-                            }}>菜单管理</a>
+                            }}>添加菜单到角色</a>
                         </span>
                     )},
 
@@ -102,7 +116,7 @@ class component extends Component{
     /*
      *  初始化页面数据
      */
-    initIndex(){
+    initIndex(updateParams){
         const _this = this;
         const params = _this.state.toolbarParams;
         Ajax.get({
@@ -125,7 +139,8 @@ class component extends Component{
                         //         $set:_this.state.indexTable.pagination.current
                         //     }
                         // }
-                    }
+                    },
+                    ...updateParams
                 }))
             }
         })
@@ -166,15 +181,16 @@ class component extends Component{
      * @desc   通过keys获取data里面的对应的id集合
      * @date   2019-04-09
      * @author luozhou
-     * @param  {String} keys    数组
-     * @param  {String} data    数组
+     * @param  {Array}  keys    数组
+     * @param  {Array}  data    数组
+     * @param  {String} data    id字符串
      */
-    getKeysByIds(data,keys){
+    getKeysByIds(data,keys,idType='id'){
         let ids = [];
         const fn = (data,keys)=>{
             data.map((el)=>{
                 if(keys.indexOf(el.key)>=0){
-                    ids.push(el.id)
+                    ids.push(el[idType])
                 }
                 if(el.children){
                     fn(el.children,keys)
@@ -183,6 +199,29 @@ class component extends Component{
         }
         fn(data,keys);
         return ids;
+    }
+    /**
+     * @desc   通过keys获取data里面的对应的id集合
+     * @date   2019-04-09
+     * @author luozhou
+     * @param  {Array}  ids    数组
+     * @param  {Array}  data    数组
+     * @param  {String} data    id字符串
+     */
+    getIdsByKeys(data,ids,keyType='key'){
+        let keys = [];
+        const fn = (data,ids)=>{
+            data.map((el)=>{
+                if(ids.indexOf(el.id)>=0){
+                    keys.push(el[keyType])
+                }
+                if(el.children){
+                    fn(el.children,ids)
+                }
+            })
+        }
+        fn(data,ids);
+        return keys;
     }
     render(){
         const _this = this;
@@ -198,33 +237,24 @@ class component extends Component{
                     
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
-                <Modal title="菜单管理"
+                <Modal title="菜单列表"
                    onCancel={()=>{
                         update('set',addons(state,{Modal:{visMenu:{$set:false}}}))
                    }}
                    footer={[
                     <Button onClick={()=>{
                         Ajax.post({
-                            url:config.RoleAdmin.urls.addRoleToAdminUser,
-                            params:{
-                                ids:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys)
-                            },
-                            success:(data)=>{
-                                _this.initIndex();
-                            }
-                        })
-                    }} type="primary" key="1">关联到用户</Button>,
-                    <Button onClick={()=>{
-                        Ajax.post({
                             url:config.RoleAdmin.urls.addMenuToRole,
                             params:{
-                                ids:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys)
+                                // roleIds:JSON.stringify(_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys)),
+                                menuIds:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys),
+                                roleId:state.record.id
                             },
                             success:(data)=>{
-                                _this.initIndex();
+                                _this.initIndex({Modal:{visMenu:{$set:false}}});
                             }
                         })
-                    }} type="primary" key="2">菜单权限</Button>
+                    }} type="primary" key="2">确定</Button>
                    ]}
                    visible={state.Modal.visMenu}>
                         <Tree

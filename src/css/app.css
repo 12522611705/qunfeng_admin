@@ -256,12 +256,17 @@
 }
 .main{
     height: calc(100% - 60px);
+    position: relative;
 }
 .main .left{
     float: left;
     width:200px;    
     height:100%;
     border-right: 1px solid #ddd;
+    position: absolute;
+    overflow-y: auto;
+    left: 0px;
+    top:0px;
 }
 .main .right{
     margin-left: 200px;
