@@ -40,6 +40,12 @@ export const config = {
 			addMenuToRole:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addMenuToRole',
 			addRoleToAdminUser:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addRoleToAdminUser',
 		}
+	},
+	// 收运费记录
+	CollectorLog:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/list'
+		}
 	}
 	
 	

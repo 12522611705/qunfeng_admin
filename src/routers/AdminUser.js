@@ -89,8 +89,8 @@ class component extends Component{
                                     Modal:{visChangePass:{$set:true}},
                                     record:{$set:record},
                                     changePass:{
-                                        password1:{$set:record.password},
-                                        password2:{$set:record.password}
+                                        password1:{$set:''},
+                                        password2:{$set:''}
                                     }
                                 }))
                             }}>修改密码</a>
@@ -188,6 +188,8 @@ class component extends Component{
                     okText="确定"
                     cancelText="取消"
                     onOk={()=>{
+                        if(!state.addUser.account.length) return message.info('账号不能为空！');
+                        if(!state.addUser.password.length) return message.info('密码不能为空！');
                         Ajax.post({
                             url:config.UserAdmin.urls.add,
                             params:{
