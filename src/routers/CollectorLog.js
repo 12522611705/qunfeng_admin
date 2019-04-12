@@ -41,6 +41,7 @@ class component extends Component{
                 source:'',//用户来源
                 pageSize:'',//每页长度
                 page:'',//当前页
+                type:'',//环卫车类型查询
             },
             // 省市区查询
             address:{
@@ -63,14 +64,20 @@ class component extends Component{
                     }
                 },
                 head:[
-                    { title: '司机名', dataIndex: 'driverName', key: 'driverName'}, 
-                    { title: '小区名', dataIndex: 'plotName', key: 'plotName'}, 
+                    { title: '当时收运垃圾高度', dataIndex: 'altitude', key: 'altitude'}, 
                     { title: '收运车车牌号', dataIndex: 'carNumber', key: 'carNumber'}, 
                     { title: '省', dataIndex: 'pro', key: 'pro'}, 
                     { title: '市', dataIndex: 'city', key: 'city'}, 
                     { title: '区', dataIndex: 'area', key: 'area'},
-                    { title: '开始时间', dataIndex: 'startTime', key: 'startTime'},
-                    { title: '结束时间', dataIndex: 'endTime', key: 'endTime'},
+                    { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'},
+                    { title: '司机名字', dataIndex: 'driverName', key: 'driverName'},
+                    { title: '收运记录id', dataIndex: 'id', key: 'id'},
+                    { title: '经度', dataIndex: 'lon', key: 'lon'},
+                    { title: '纬度', dataIndex: 'lat', key: 'lat'},
+                    { title: '小区名', dataIndex: 'plotName', key: 'plotName'},
+                    { title: '当时温度', dataIndex: 'temperature', key: 'temperature'},
+                    { title: '重量', dataIndex: 'weight', key: 'weight'},
+                    { title: '操作者用户名字', dataIndex: 'userName', key: 'userName'},
                     { title: '操作人ID', dataIndex: 'userId', key: 'userId'},
                     { title: '环卫车类型', dataIndex: 'type', key: 'type', render:(text)=>(
                         ['','餐厨垃圾环卫车','其它垃圾环卫车'][text]
@@ -335,24 +342,24 @@ class component extends Component{
                         _this.initIndex();
                     }}>查询</Button>
                 </div>
-                {/*<div className="main-toolbar">
+                <div className="main-toolbar">
                     环卫车类型：
-                    <Select value={state.toolbarParams.source} style={{ width: 120, marginRight:10 }} onChange={(value)=>{
+                    <Select value={state.toolbarParams.type} style={{ width: 120, marginRight:10 }} onChange={(value)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                source:{
+                                type:{
                                     $set:value    
                                 }
                             }
                         }))
                     }}>
-                        <Select.Option value="1">H5</Select.Option>
-                        <Select.Option value="2">安卓</Select.Option>
-                        <Select.Option value="3">IOS</Select.Option>
-                        <Select.Option value="4">ICK注册</Select.Option>
+                        <Select.Option value="1">餐厨垃圾环卫车</Select.Option>
+                        <Select.Option value="2">其他垃圾环卫车</Select.Option>
                     </Select>
-
-                </div>*/}
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>查询</Button>
+                </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                
             </div>

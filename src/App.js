@@ -290,6 +290,7 @@ class component extends Component{
                                                 {
                                                     el.children && el.children.map((e,i)=>(
                                                         <Menu.Item onClick={()=>{
+                                                            
                                                             let search = parseSearch(_this.props.location.search);
                                                             search.menu=String(index) + '-' + i;
 

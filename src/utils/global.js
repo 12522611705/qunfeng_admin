@@ -16,10 +16,12 @@ const responseStatus = {
  * @param  {String} search 
  */
 export const parseSearch = (search)=>{
+	
 	let obj = {};
 	let str = search.split('?')[1] || '';
-	str.split('&').map((el)=>{
-		obj[el.split('=')[0]] = el.split('=')[1]
+
+	str.split('&').forEach((el)=>{
+		el && (obj[el.split('=')[0]] = el.split('=')[1])
 	})
 	return obj;
 }

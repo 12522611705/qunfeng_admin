@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -23,7 +23,8 @@ class component extends Component{
         this.update = update.bind(this);
         this.state = {
             Modal:{
-                visMenu:false
+                visMenu:false,
+                visAddRole:false
             },
             record:{},
             // 表格数据
@@ -101,7 +102,11 @@ class component extends Component{
             menuTree:{
                 checkedKeys:[]
             },
-            treeData:[]
+            treeData:[],
+            addRole:{
+                remark:'',
+                roleName:''
+            }
         }
     }
     componentDidMount(){
@@ -227,6 +232,16 @@ class component extends Component{
         const _this = this;
         const state = _this.state;
         const update = _this.update;
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 6 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 16 },
+          },
+        };
         return (
             <div className="content">
                 <Breadcrumb>
@@ -234,7 +249,11 @@ class component extends Component{
                     <Breadcrumb.Item><a href="javascript:;">角色管理</a></Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="main-toolbar">
-                    
+                    <Button onClick={()=>{
+                        update('set',addons(state,{
+                            Modal:{visAddRole:{$set:true}}
+                        }))
+                    }} type="primary">添加角色</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <Modal title="菜单列表"
@@ -272,6 +291,36 @@ class component extends Component{
                             checkedKeys={state.menuTree.checkedKeys}>
                             {_this.renderMenuTreeNodes(state.treeData)}
                       </Tree>
+                </Modal>
+                <Modal title="添加角色"
+                   onCancel={()=>{
+                        update('set',addons(state,{Modal:{visAddRole:{$set:false}}}))
+                   }}
+                   footer={[
+                    <Button onClick={()=>{
+                        Ajax.post({
+                            url:config.RoleAdmin.urls.addRole,
+                            params:{
+                                remark:state.addRole.remark,
+                                roleName:state.addRole.roleName
+                            },
+                            success:(data)=>{
+                                _this.initIndex({Modal:{visAddRole:{$set:false}}});
+                            }
+                        })
+                    }} type="primary" key="2">确定</Button>
+                   ]}
+                   visible={state.Modal.visAddRole}>
+                        <Form.Item {...formItemLayout} label="角色名" >
+                            <Input placeholder="请输入角色名" onChange={(e)=>{
+                                update('set',addons(state,{addRole:{roleName:{$set:e.target.value}}}))
+                            }} value={state.addRole.roleName}/>
+                        </Form.Item>
+                        <Form.Item {...formItemLayout} label="备注" >
+                            <Input placeholder="请填写备注信息" onChange={(e)=>{
+                                update('set',addons(state,{addRole:{remark:{$set:e.target.value}}}))
+                            }} value={state.addRole.remark}/>
+                        </Form.Item>
                 </Modal>
                 
                 

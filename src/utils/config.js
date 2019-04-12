@@ -39,6 +39,8 @@ export const config = {
 			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/delete',
 			addMenuToRole:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addMenuToRole',
 			addRoleToAdminUser:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addRoleToAdminUser',
+			addRole:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addRole',
+			roleListByUserId:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/roleListByUserId',
 		}
 	},
 	// 收运费记录

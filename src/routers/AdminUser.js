@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, Tree, message } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Checkbox, Table, Divider, Tag, DatePicker, Modal, Tree, message } from 'antd';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -24,7 +24,8 @@ class component extends Component{
         this.state = {
             Modal:{
                visAddUser:false,
-               visChangePass:false
+               visChangePass:false,
+               visRoleList:false
             },
             record:{},
             // 表格数据
@@ -41,7 +42,7 @@ class component extends Component{
                 head:[
                     { title: '用户名', dataIndex: 'account', key: 'account'}, 
                     { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'}, 
-                    { title: '用户ID', dataIndex: 'creationUserId', key: 'creationUserId'}, 
+                    { title: '创建人ID', dataIndex: 'creationUserId', key: 'creationUserId'}, 
                     // { title: '所属角色', dataIndex: 'current', key: 'current', render:()=>(
                     //     <div>
                     //         <p>我是老师</p>
@@ -72,14 +73,24 @@ class component extends Component{
                             }}>删除</a>
                             <Divider type="vertical" />
                             <a href="javascript:;" onClick={()=>{
-                               Ajax.post({
-                                    url:config.RoleAdmin.urls.addRoleToAdminUser,
+                               Ajax.get({
+                                    url:config.RoleAdmin.urls.roleListByUserId,
                                     params:{
-                                        userId:record.id,
-                                        roleIds:[]
+                                        userId:record.id
                                     },
                                     success:(data)=>{
-                                        
+                                        let roleIds = [];
+                                        data.forEach((el)=>{
+                                            if(el.isCheckmark==1){
+                                                roleIds.push(el.id)
+                                            }
+                                        })
+                                        _this.update('set',addons(_this.state,{
+                                            Modal:{visRoleList:{$set:true}},
+                                            record:{$set:record},
+                                            roleList:{$set:data},
+                                            roleIds:{$set:roleIds}
+                                        }))
                                     }
                                 })
                             }}>绑定角色</a>
@@ -107,7 +118,9 @@ class component extends Component{
             changePass:{
                 password1:'',
                 password2:''
-            }
+            },
+            roleList:[],
+            roleIds:[]
         }
     }
     componentDidMount(){
@@ -205,12 +218,12 @@ class component extends Component{
                     }}
                     visible={state.Modal.visAddUser}>
                     <Form.Item {...formItemLayout} label="账号" >
-                        <Input placeholder="请输入车名" onChange={(e)=>{
+                        <Input placeholder="请输入账号" onChange={(e)=>{
                             update('set',addons(state,{addUser:{account:{$set:e.target.value}}}))
                         }} value={state.addUser.account}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="密码" >
-                        <Input placeholder="请输入车名" onChange={(e)=>{
+                        <Input placeholder="请输入密码" onChange={(e)=>{
                             update('set',addons(state,{addUser:{password:{$set:e.target.value}}}))
                         }} value={state.addUser.password}/>
                     </Form.Item>
@@ -247,6 +260,36 @@ class component extends Component{
                             update('set',addons(state,{changePass:{password2:{$set:e.target.value}}}))
                         }} value={state.changePass.password2}/>
                     </Form.Item>
+                </Modal>
+                <Modal 
+                    title="绑定角色" 
+                    okText="确定"
+                    cancelText="取消"
+                    onOk={()=>{
+                        Ajax.post({
+                            url:config.RoleAdmin.urls.addRoleToAdminUser,
+                            params:{
+                                roleIds:state.roleIds,
+                                userId:state.record.id
+                            },
+                            success:(data)=>{
+                                _this.initIndex({Modal:{visRoleList:{$set:false}}})
+                            }
+                        })
+                    }}
+                    onCancel={()=>{
+                        update('set',addons(state,{Modal:{visRoleList:{$set:false}}}))
+                    }}
+                    visible={state.Modal.visRoleList}>
+                    <Checkbox.Group value={state.roleIds} onChange={(values)=>{
+                        update('set',addons(state,{roleIds:{$set:values}}));
+                    }}>
+                        {
+                            state.roleList.map((el,index)=>(
+                                <Checkbox key={index} value={el.id}>{el.roleName}</Checkbox>        
+                            ))
+                        }
+                    </Checkbox.Group>
                 </Modal>
             </div>
         );
