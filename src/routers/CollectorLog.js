@@ -80,7 +80,7 @@ class component extends Component{
                     { title: '操作者用户名字', dataIndex: 'userName', key: 'userName'},
                     { title: '操作人ID', dataIndex: 'userId', key: 'userId'},
                     { title: '环卫车类型', dataIndex: 'type', key: 'type', render:(text)=>(
-                        ['','餐厨垃圾环卫车','其它垃圾环卫车'][text]
+                        ['全部','餐厨垃圾环卫车','其它垃圾环卫车'][text] || '全部'
                     )},
                     // { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                     //     <span>
@@ -257,16 +257,16 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 pro:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 },
                                                 city:{
-                                                    $set:state.address.city[el.sheng][0].code
+                                                    $set:state.address.city[el.sheng][0].name
                                                 },
                                                 area:{
                                                     $set: state.address.city[el.sheng] && 
                                                           state.address.city[el.sheng][0] && 
                                                           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].code
+                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
                                                 }
                                             },
                                             address:{
@@ -295,10 +295,10 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 city:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 },
                                                 area:{
-                                                    $set:state.address.area[state.address.sheng+el.di][0].code
+                                                    $set:state.address.area[state.address.sheng+el.di][0].name
                                                 }
                                             },
                                             address:{
@@ -324,7 +324,7 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 area:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 }
                                             },
                                             address:{
@@ -359,6 +359,44 @@ class component extends Component{
                     <Button type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
+                </div>
+                <div className="main-toolbar">
+                    <Button type="primary" onClick={()=>{
+                        state.toolbarParams = {
+                            driverName:'',//用户名
+                            plotName:'',//手机号码
+                            carNumber:'',//收运费车牌号
+                            userId:'',//操作人ID
+                            search:'',//查询字段
+                            startTime:'',//开始时间
+                            endTime:'',//结束时间
+                            pro:'',//省
+                            city:'',//市
+                            area:'',//区
+                            source:'',//用户来源
+                            pageSize:'',//每页长度
+                            page:'',//当前页
+                            type:'',//环卫车类型查询
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                driverName:{$set:1},//用户名
+                                plotName:{$set:10},//手机号码
+                                carNumber:{$set:''},//查询字段
+                                userId:{$set:''},//性别
+                                search:{$set:''},//用户ick号
+                                startTime:{$set:''},//省
+                                endTime:{$set:''},//市
+                                pro:{$set:''},//市
+                                city:{$set:''},//市
+                                area:{$set:''},//区
+                                source:{$set:''},//用户来源
+                                pageSize:{$set:''},//每页长度
+                                page:{$set:''},//当前页
+                                type:{$set:''},//环卫车类型查询
+                            }
+                        })
+                    }}>重置</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                

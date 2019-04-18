@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, message } from 'antd';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -239,6 +239,17 @@ class component extends Component{
             }
         }))
     }
+    isVehicleNumber(vehicleNumber){
+        var xreg=/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}(([0-9]{5}[DF]$)|([DF][A-HJ-NP-Z0-9][0-9]{4}$))/;
+        var creg=/^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]{1}$/;
+        if(vehicleNumber.length == 7){
+            return creg.test(vehicleNumber);
+        } else if(vehicleNumber.length == 8){
+            return xreg.test(vehicleNumber);
+        } else{
+            return false;
+        }
+    }
     render(){
         const _this = this;
         const state = _this.state;
@@ -329,16 +340,16 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 pro:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 },
                                                 city:{
-                                                    $set:state.address.city[el.sheng][0].code
+                                                    $set:state.address.city[el.sheng][0].name
                                                 },
                                                 area:{
                                                     $set: state.address.city[el.sheng] && 
                                                           state.address.city[el.sheng][0] && 
                                                           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].code
+                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
                                                 }
                                             },
                                             address:{
@@ -367,10 +378,10 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 city:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 },
                                                 area:{
-                                                    $set:state.address.area[state.address.sheng+el.di][0].code
+                                                    $set:state.address.area[state.address.sheng+el.di][0].name
                                                 }
                                             },
                                             address:{
@@ -396,7 +407,7 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 area:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 }
                                             },
                                             address:{
@@ -457,6 +468,33 @@ class component extends Component{
                         }))
                     }}>添加环卫车</Button>
                 </div>
+                <div className="main-toolbar">
+                    <Button type="primary" onClick={()=>{
+                        state.toolbarParams = {
+                            page:1,
+                            pageSize:10,
+                            carName:'',
+                            // driverName:params.driverName||'',
+                            carNumber:'',
+                            imei:'',
+                            pro:'',
+                            city:'',
+                            area:''
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                page:{$set:1},//用户名
+                                pageSize:{$set:10},//手机号码
+                                carName:{$set:''},//查询字段
+                                carNumber:{$set:''},//性别
+                                imei:{$set:''},//用户ick号
+                                pro:{$set:''},//省
+                                city:{$set:''},//市
+                                area:{$set:''},//市
+                            }
+                        })
+                    }}>重置</Button>
+                </div>
                 <Modal title={state.recordType=='add'?'添加环卫车':'修改环卫车记录'}
                    onOk={()=>{
                         let url = '';
@@ -465,6 +503,8 @@ class component extends Component{
                         }else if(state.recordType=='update'){
                             url  = config.SanitationCarAdmin.urls.update
                         }
+                        if(!_this.isVehicleNumber(state.newRecord.carNumber)) return message.info('请输入有效车牌号');
+                        if(state.newRecord.imei.length!=15) return message.info('imei输入有误，请重新填写（长度为15的纯数字）');
                         Ajax.post({
                             url,
                             params:{

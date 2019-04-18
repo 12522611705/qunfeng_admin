@@ -332,7 +332,7 @@ class component extends Component{
                             onOk={()=>{
                                 if(!state.update.password1.length || !state.update.password2.length) return message.info('密码不能为空');
                                 if(state.update.password1 != state.update.password2) return message.info('两次密码输入不一致');
-                                Ajax.get({
+                                Ajax.post({
                                     url:config.UserAdmin.urls.update,
                                     params:{
                                         password:state.update.password1||'',

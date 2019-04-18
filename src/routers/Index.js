@@ -113,7 +113,7 @@ class component extends Component{
     /*
      *  初始化页面数据
      */
-    initIndex(){
+    initIndex(updateParams){
         const _this = this;
         const params = _this.state.toolbarParams;
         Ajax.get({
@@ -152,7 +152,8 @@ class component extends Component{
                                 $set:_this.state.indexTable.pagination.current
                             }
                         }
-                    }
+                    },
+                    ...updateParams
                 }))
             }
         })
@@ -215,16 +216,16 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 pro:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 },
                                                 city:{
-                                                    $set:state.address.city[el.sheng][0].code
+                                                    $set:state.address.city[el.sheng][0].name
                                                 },
                                                 area:{
                                                     $set: state.address.city[el.sheng] && 
                                                           state.address.city[el.sheng][0] && 
                                                           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].code
+                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
                                                 }
                                             },
                                             address:{
@@ -253,10 +254,10 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 city:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 },
                                                 area:{
-                                                    $set:state.address.area[state.address.sheng+el.di][0].code
+                                                    $set:state.address.area[state.address.sheng+el.di][0].name
                                                 }
                                             },
                                             address:{
@@ -282,7 +283,7 @@ class component extends Component{
                                         update('set',addons(state,{
                                             toolbarParams:{
                                                 area:{
-                                                    $set:el.code
+                                                    $set:el.name
                                                 }
                                             },
                                             address:{
@@ -351,6 +352,46 @@ class component extends Component{
                     <Button type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
+                </div>
+                <div className="main-toolbar">
+                    <Button type="primary" onClick={()=>{
+                        state.toolbarParams = {
+                            name:'',//用户名
+                            tel:'',//手机号码
+                            search:'',//查询字段
+                            sex:'',//性别
+                            ickNo:'',//用户ick号
+                            type:'',//用户类型
+                            createTimeStart:'',//开始时间
+                            createTimeEnd:'',//结束时间
+                            pro:'',//省
+                            city:'',//市
+                            area:'',//区
+                            cardId:'',//身份证号码
+                            source:'',//用户来源
+                            pageSize:10,//每页长度
+                            page:1,//当前页
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                name:{$set:''},//用户名
+                                tel:{$set:''},//手机号码
+                                search:{$set:''},//查询字段
+                                sex:{$set:''},//性别
+                                ickNo:{$set:''},//用户ick号
+                                type:{$set:''},//用户类型
+                                createTimeStart:{$set:''},//开始时间
+                                createTimeEnd:{$set:''},//结束时间
+                                pro:{$set:''},//省
+                                city:{$set:''},//市
+                                area:{$set:''},//区
+                                cardId:{$set:''},//身份证号码
+                                source:{$set:''},//用户来源
+                                pageSize:{$set:10},//每页长度
+                                page:{$set:1},//当前页
+                            }
+                        })
+                    }}>重置</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
             </div>

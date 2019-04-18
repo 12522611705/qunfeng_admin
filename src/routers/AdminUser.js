@@ -43,13 +43,6 @@ class component extends Component{
                     { title: '用户名', dataIndex: 'account', key: 'account'}, 
                     { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'}, 
                     { title: '创建人ID', dataIndex: 'creationUserId', key: 'creationUserId'}, 
-                    // { title: '所属角色', dataIndex: 'current', key: 'current', render:()=>(
-                    //     <div>
-                    //         <p>我是老师</p>
-                    //         <p>我是学生</p>
-                    //         <p>我是班委</p>
-                    //     </div>
-                    // )}, 
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
                             <a href="javascript:;" onClick={()=>{
