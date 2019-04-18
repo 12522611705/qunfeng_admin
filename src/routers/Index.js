@@ -179,6 +179,7 @@ class component extends Component{
                         }))
                     }} value={state.toolbarParams.name} 
                     addonBefore={<span>用户名</span>} 
+                    placeholder="请输入用户名"
                     style={{ width: 300, marginRight: 10 }} 
                     addonAfter={<a onClick={()=>{
                         _this.initIndex();
@@ -192,6 +193,7 @@ class component extends Component{
                             }
                         }))
                     }} value={state.toolbarParams.tel} 
+                    placeholder="请输入电话号码"
                     addonBefore={<span>电话号码</span>} 
                     style={{ width: 300, marginRight: 10 }} 
                     addonAfter={<a onClick={()=>{
@@ -208,7 +210,8 @@ class component extends Component{
                 </div>
                 <div className="main-toolbar">
                     详细地址：
-                    <Select placeholder="--省--" value={state.toolbarParams.pro} style={{ width: 120, marginRight:10 }}>
+                    <Select value={state.toolbarParams.pro} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>                        
                         {
                             state.address.shen.map((el,index)=>{
                                 return <Select.Option value={el.code} key={index}>
@@ -218,26 +221,26 @@ class component extends Component{
                                                 pro:{
                                                     $set:el.name
                                                 },
-                                                city:{
-                                                    $set:state.address.city[el.sheng][0].name
-                                                },
-                                                area:{
-                                                    $set: state.address.city[el.sheng] && 
-                                                          state.address.city[el.sheng][0] && 
-                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                          state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
-                                                }
+                                                // city:{
+                                                //     $set:state.address.city[el.sheng][0].name
+                                                // },
+                                                // area:{
+                                                //     $set: state.address.city[el.sheng] && 
+                                                //           state.address.city[el.sheng][0] && 
+                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
+                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
+                                                // }
                                             },
                                             address:{
                                                 sheng:{
                                                     $set:el.sheng
                                                 },
-                                                di:{
-                                                    $set:'01'
-                                                },
-                                                xian:{
-                                                    $set:'00'
-                                                }
+                                                // di:{
+                                                //     $set:'01'
+                                                // },
+                                                // xian:{
+                                                //     $set:'00'
+                                                // }
                                             }
                                         }))
                                     }}>{el.name}</div>
@@ -246,7 +249,8 @@ class component extends Component{
                         }
                     </Select>
 
-                    <Select placeholder="--市--" value={state.toolbarParams.city} style={{ width: 120, marginRight:10 }}>
+                    <Select value={state.toolbarParams.city} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>
                         {
                             state.address.city[state.address.sheng] && state.address.city[state.address.sheng].map((el,index)=>{
                                 return <Select.Option value={el.code} key={index}>
@@ -256,17 +260,17 @@ class component extends Component{
                                                 city:{
                                                     $set:el.name
                                                 },
-                                                area:{
-                                                    $set:state.address.area[state.address.sheng+el.di][0].name
-                                                }
+                                                // area:{
+                                                //     $set:state.address.area[state.address.sheng+el.di][0].name
+                                                // }
                                             },
                                             address:{
                                                 di:{
                                                     $set:el.di
                                                 },
-                                                xian:{
-                                                    $set:'00'
-                                                }
+                                                // xian:{
+                                                //     $set:'00'
+                                                // }
                                             }
                                         }))
                                     }}>{el.name}</div>
@@ -274,7 +278,8 @@ class component extends Component{
                             })
                         }
                     </Select>
-                    <Select placeholder="--区--" value={state.toolbarParams.area} style={{ width: 120, marginRight:10 }}>
+                    <Select value={state.toolbarParams.area} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>
                         {
                             state.address.area[state.address.sheng+state.address.di] && 
                             state.address.area[state.address.sheng+state.address.di].map((el,index)=>{
@@ -312,6 +317,7 @@ class component extends Component{
                             }
                         }))
                     }}>
+                        <Select.Option value="">全部</Select.Option>
                         <Select.Option value="1">H5</Select.Option>
                         <Select.Option value="2">安卓</Select.Option>
                         <Select.Option value="3">IOS</Select.Option>
@@ -328,6 +334,7 @@ class component extends Component{
                             }
                         }))
                     }}>
+                        <Select.Option value="">全部</Select.Option>
                         <Select.Option value="1">保洁员</Select.Option>
                         <Select.Option value="2">物业公司</Select.Option>
                         <Select.Option value="3">街道</Select.Option>
@@ -345,6 +352,7 @@ class component extends Component{
                             }
                         }))
                     }}>
+                        <Select.Option value="">全部</Select.Option>
                         <Select.Option value="0">保密</Select.Option>
                         <Select.Option value="1">男</Select.Option>
                         <Select.Option value="2">女</Select.Option>
