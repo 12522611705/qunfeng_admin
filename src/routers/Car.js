@@ -503,8 +503,8 @@ class component extends Component{
                         }else if(state.recordType=='update'){
                             url  = config.SanitationCarAdmin.urls.update
                         }
-                        if(!_this.isVehicleNumber(state.newRecord.carNumber)) return message.info('请输入有效车牌号');
-                        if(state.newRecord.imei.length!=15) return message.info('imei输入有误，请重新填写（长度为15的纯数字）');
+                        if(!_this.isVehicleNumber(state.newRecord.carNumber)) return message.info('请输入的车牌号无效');
+                        if(state.newRecord.imei.length!=15) return message.info('您输入的imei无效');
                         Ajax.post({
                             url,
                             params:{
