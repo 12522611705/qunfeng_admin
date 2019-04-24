@@ -48,8 +48,16 @@ export const config = {
 		urls:{
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/list'
 		}
+	},
+	Notification:{
+		urls:{
+			notificationAdd:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationAdd',
+			notificationDelete:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationDelete',
+			notificationList:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationList',
+			notificationPublish:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationPublish',
+			notificationUpdate:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationUpdate'
+		}
 	}
-	
 	
 	
 }

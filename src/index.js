@@ -17,6 +17,9 @@ import Role from './routers/Role';
 import CollectorLog from './routers/CollectorLog';
 // 后台用户列表
 import AdminUser from './routers/AdminUser';
+// 推文管理
+import Notification from './routers/Notification';
+
 
 ReactDOM.render((
 	<HashRouter>
@@ -28,6 +31,7 @@ ReactDOM.render((
 				<Route path="/Role"							component={Role}/>
 				<Route path="/CollectorLog"					component={CollectorLog}/>
 				<Route path="/AdminUser"					component={AdminUser}/>
+				<Route path="/Notification"					component={Notification}/>
 	
 
 			</App>
