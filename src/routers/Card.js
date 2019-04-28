@@ -41,26 +41,57 @@ class component extends Component{
                     { title: '用户手机号码', dataIndex: 'tel', key: 'tel'}, 
                     { title: '身份证名字', dataIndex: 'name', key: 'name'}, 
                     { title: '身份证正面图片', dataIndex: 'cardFrontUrl', key: 'cardFrontUrl',render:(text)=>(
-                    	<img style={{width:200}} src={text}/>
+                    	<img style={{width:200,height:40}} src={text}/>
+                    )}, 
+                    { title: '身份证反面图片', dataIndex: 'cardBackUrl', key: 'cardBackUrl',render:(text)=>(
+                        <img style={{width:200,height:40}} src={text}/>
                     )}, 
                     { title: '身份证号码', dataIndex: 'cardNo', key: 'cardNo'}, 
                     { title: '状态', dataIndex: 'state', key: 'state',render:(text)=>(
                     	['','待审核','待提交','审核通过','审核不通过'][text]
                     )}, 
                     { title: '开始时间', dataIndex: 'creationTime', key: 'creationTime'}, 
-                    { title: '备注', dataIndex: 'remark', key: 'remark'},
+                    { title: '备注', dataIndex: 'remark', key: 'remark', render:(text,record)=>(
+                        <TextArea defaultValue={text} onBlur={(e)=>{
+                            Ajax.post({
+                                url:config.Card.urls.update,
+                                params:{
+                                    remark:e.target.value,
+                                    id:record.id
+                                },
+                                success:(data)=>{
+                                    _this.initIndex();
+                                }
+                            })
+                        }}/>
+                    )},
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
                             <a href="javascript:;" onClick={()=>{
-                                _this.update('set',addons(_this.state,{
-                                    record:{$set:record},
-                                    Modal:{visUpdate:{$set:true}},
-                                    update:{
-                                        remark:{$set:record.remark},
-                                        state:{$set:record.state}
+                                Ajax.post({
+                                    url:config.Card.urls.update,
+                                    params:{
+                                        state:3,
+                                        id:record.id
+                                    },
+                                    success:(data)=>{
+                                        _this.initIndex();
                                     }
-                                }))
-                            }}>修改</a>
+                                })
+                            }}>通过</a>
+                            <Divider type="vertical"/>
+                            <a href="javascript:;" onClick={()=>{
+                                Ajax.post({
+                                    url:config.Card.urls.update,
+                                    params:{
+                                        state:4,
+                                        id:record.id
+                                    },
+                                    success:(data)=>{
+                                        _this.initIndex();
+                                    }
+                                })
+                            }}>不通过</a>
                         </span>
                     )},
                 ],
@@ -198,9 +229,12 @@ class component extends Component{
                     }} href="javascript:;"><Icon type="search" /></a>}/>
                 </div>
                 <div className="main-toolbar">
-	                状态：<Select defaultValue='' onChange={(value)=>{
-                        state.toolbarParams.state = value;
-	                	_this.initIndex();
+	                状态：<Select value={state.toolbarParams.state} onChange={(value)=>{
+                         update('set',addons(state,{
+                            toolbarParams:{
+                                state:{$set:value}
+                            }
+                         }))
 	                }} style={{ width: 120, marginRight:10 }}>
 	                    <Select.Option value="">全部</Select.Option>
 	                    <Select.Option value="1">待审核</Select.Option>
@@ -214,6 +248,32 @@ class component extends Component{
                         state.toolbarParams.createTimeEnd = dateString[1];
                         _this.initIndex();
                     }} />
+                </div>
+
+                <div style={{textAlign:"right"}} className="main-toolbar">
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        state.toolbarParams = {
+                            tel:'',
+                            startTime:'',
+                            endTime:'',
+                            cardNo:'',
+                            state:'',
+                            name:''
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                tel:{$set:''},
+                                startTime:{$set:''},
+                                endTime:{$set:''},
+                                cardNo:{$set:''},
+                                state:{$set:''},
+                                name:{$set:''},
+                            }
+                        })
+                    }}>重置</Button>
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>搜索</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <Modal title="修改"

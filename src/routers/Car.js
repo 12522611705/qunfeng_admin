@@ -570,28 +570,28 @@ class component extends Component{
                                             update('set',addons(state,{
                                                 newRecord:{
                                                     pro:{
-                                                        $set:el.code
+                                                        $set:el.name
                                                     },
                                                     city:{
-                                                        $set:state.address.city[el.sheng][0].code
+                                                        $set:state.address.city[el.sheng][0].name
                                                     },
                                                     area:{
                                                         $set: state.address.city[el.sheng] && 
                                                               state.address.city[el.sheng][0] && 
                                                               state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                              state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].code
+                                                              state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
                                                     }
                                                 },
                                                 address:{
                                                     sheng:{
                                                         $set:el.sheng
                                                     },
-                                                    di:{
-                                                        $set:'01'
-                                                    },
-                                                    xian:{
-                                                        $set:'00'
-                                                    }
+                                                    // di:{
+                                                    //     $set:'01'
+                                                    // },
+                                                    // xian:{
+                                                    //     $set:'00'
+                                                    // }
                                                 }
                                             }))
                                         }}>{el.name}</div>
@@ -608,19 +608,19 @@ class component extends Component{
                                             update('set',addons(state,{
                                                 newRecord:{
                                                     city:{
-                                                        $set:el.code
+                                                        $set:el.name
                                                     },
                                                     area:{
-                                                        $set:state.address.area[state.address.sheng+el.di][0].code
+                                                        $set:state.address.area[state.address.sheng+el.di][0].name
                                                     }
                                                 },
                                                 address:{
                                                     di:{
                                                         $set:el.di
                                                     },
-                                                    xian:{
-                                                        $set:'00'
-                                                    }
+                                                    // xian:{
+                                                    //     $set:'00'
+                                                    // }
                                                 }
                                             }))
                                         }}>{el.name}</div>
@@ -637,7 +637,7 @@ class component extends Component{
                                             update('set',addons(state,{
                                                 newRecord:{
                                                     area:{
-                                                        $set:el.code
+                                                        $set:el.name
                                                     }
                                                 },
                                                 address:{

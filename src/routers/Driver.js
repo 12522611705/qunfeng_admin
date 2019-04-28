@@ -264,9 +264,12 @@ class component extends Component{
                     }} href="javascript:;"><Icon type="search" /></a>}/>
                 </div>
                 <div className="main-toolbar">
-                    驾驶证类型：<Select defaultValue="" onChange={(value)=>{
-                    	state.toolbarParams.drivingLicenceType = value;
-                    	_this.initIndex();
+                    驾驶证类型：<Select value={state.toolbarParams.drivingLicenceType} onChange={(value)=>{
+                    	 update('set',addons(state,{
+                            toolbarParams:{
+                                drivingLicenceType:{$set:value}
+                            }
+                         }))
                     }} style={{ width: 120, marginRight:10 }}>
                         <Select.Option value="">全部</Select.Option>    
                         <Select.Option value="1">A1</Select.Option>    
@@ -291,14 +294,45 @@ class component extends Component{
                         state.toolbarParams.createTimeEnd = dateString[1];
                         _this.initIndex();
                     }} />
-                    工作状态：<Select defaultValue="" onChange={(value)=>{
-                    	state.toolbarParams.isWork = value;
-                    	_this.initIndex();
+                    工作状态：<Select value={state.toolbarParams.isWork} onChange={(value)=>{
+                    	update('set',addons(state,{
+                            toolbarParams:{
+                                isWork:{$set:value}
+                            }
+                        }))
                     }} style={{ width: 120, marginRight:10 }}>
                         <Select.Option value="">全部</Select.Option>    
                         <Select.Option value="1">是</Select.Option>    
                         <Select.Option value="2">否</Select.Option>    
                     </Select>
+                </div>
+
+                <div style={{textAlign:"right"}} className="main-toolbar">
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        state.toolbarParams = {
+                            tel:'',
+                            driverNumber:'',
+                            name:'',
+                            drivingLicenceType:'',
+                            startTime:'',
+                            endTime:'',
+                            isWork:''
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                tel:{$set:''},
+                                driverNumber:{$set:''},
+                                name:{$set:''},
+                                drivingLicenceType:{$set:''},
+                                startTime:{$set:''},
+                                endTime:{$set:''},
+                                isWork:{$set:''},
+                            }
+                        })
+                    }}>重置</Button>
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>搜索</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                	<Modal title={state.editorType=='add'?'添加司机':'修改司机信息'}

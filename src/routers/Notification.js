@@ -294,6 +294,23 @@ class component extends Component{
                         state.toolbarParams.createTimeEnd = dateString[1];
                         _this.initIndex();
                     }} />
+                    
+                </div>
+                <div style={{textAlign:"right"}} className="main-toolbar">
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        state.toolbarParams={
+                            status:'',
+                            createTimeStart:'',
+                            createTimeEnd:''
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                status:{$set:''},
+                                createTimeStart:{$set:''},
+                                createTimeEnd:{$set:''},
+                            }
+                        })
+                    }}>重置</Button>
                     <Button onClick={()=>{
                         _this.initIndex();
                     }} type="primary" style={{marginLeft:10}}>搜索</Button>

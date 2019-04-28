@@ -23,7 +23,7 @@ class component extends Component{
         this.update = update.bind(this);
         this.state = {
             Modal:{
-               
+               visThumb:false
             },
             record:{},
             // 表格数据
@@ -44,10 +44,15 @@ class component extends Component{
                     { title: '反馈内容', dataIndex: 'content', key: 'content' }, 
                     { title: 'ID', dataIndex: 'id', key: 'id' }, 
                     { title: '用户ID', dataIndex: 'userId', key: 'userId' }, 
-                    { title: '意见反馈图片', dataIndex: 'imgUrls', key: 'imgUrls' ,render:(text)=>(
-                        <span style={{width:200}}>
-                            <img style={{width:200}} src={text[0].imgPath}/>
-                        </span>
+                    { title: '意见反馈图片', dataIndex: 'imgUrls', key: 'imgUrls' ,render:(text,record)=>(
+                        <a href="javascript:;" onClick={()=>{
+                            _this.update('set',addons(_this.state,{
+                                record:{$set:record},
+                                Modal:{
+                                    visThumb:{$set:true}
+                                }
+                            }))
+                        }}>查看</a>
                     ) }, 
                     { title: '开始时间', dataIndex: 'creationTime', key: 'creationTime' }, 
                     { title: '手机号码', dataIndex: 'tel', key: 'tel' }
@@ -139,9 +144,12 @@ class component extends Component{
                     
                 </div>
                 <div className="main-toolbar">
-                    状态：<Select defaultValue="" onChange={(value)=>{
-                        state.toolbarParams.source = value;
-                        _this.initIndex();
+                    状态：<Select value={state.toolbarParams.source} onChange={(value)=>{
+                         update('set',addons(state,{
+                            toolbarParams:{
+                                source:{$set:value}
+                            }
+                         }))
                     }} style={{ width: 120, marginRight:10 }}>
                         <Select.Option value="">全部</Select.Option>
                         <Select.Option value="1">H5</Select.Option>
@@ -155,8 +163,45 @@ class component extends Component{
                         _this.initIndex();
                     }} />
                 </div>
+                <div style={{textAlign:"right"}} className="main-toolbar">
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        state.toolbarParams={
+                            tel:'',
+                            startTime:'',
+                            endTime:'',
+                            source:''
+                        }
+                        _this.initIndex({
+                            toolbarParams:{
+                                tel:{$set:''},
+                                startTime:{$set:''},
+                                endTime:{$set:''},
+                                source:{$set:''},
+                            }
+                        })
+                    }}>重置</Button>
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>搜索</Button>
+                </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
-               
+                <Modal title="图片查看" 
+                    okText="确定"
+                    cancelText="取消"
+                    onCancel={()=>{
+                        update('set',addons(state,{
+                            Modal:{
+                                visThumb:{$set:false}
+                            }
+                        }))
+                    }}
+                    visible={state.Modal.visThumb}>
+                    {
+                        state.record.imgUrls && state.record.imgUrls.map((el,index)=>(
+                            <div style={{paddingBottom:10}}><img style={{width:'100%'}} src={el.imgPath} key={index}/></div>
+                        ))
+                    }
+                </Modal>
             </div>
         );
     }
