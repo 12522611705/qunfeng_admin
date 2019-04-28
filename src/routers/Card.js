@@ -23,7 +23,8 @@ class component extends Component{
         this.update = update.bind(this);
         this.state = {
             Modal:{
-               visUpdate:false
+               visUpdate:false,
+               visThumb:false
             },
             record:{},
             // 表格数据
@@ -41,10 +42,24 @@ class component extends Component{
                     { title: '用户手机号码', dataIndex: 'tel', key: 'tel'}, 
                     { title: '身份证名字', dataIndex: 'name', key: 'name'}, 
                     { title: '身份证正面图片', dataIndex: 'cardFrontUrl', key: 'cardFrontUrl',render:(text)=>(
-                    	<img style={{width:200,height:40}} src={text}/>
+                    	<img onClick={()=>{
+                            _this.update('set',addons(_this.state,{
+                                thumbUrl:{$set:text},
+                                Modal:{
+                                    visThumb:{$set:true}
+                                }
+                            }))
+                        }} style={{width:200,height:40}} src={text}/>
                     )}, 
                     { title: '身份证反面图片', dataIndex: 'cardBackUrl', key: 'cardBackUrl',render:(text)=>(
-                        <img style={{width:200,height:40}} src={text}/>
+                        <img onClick={()=>{
+                            _this.update('set',addons(_this.state,{
+                                thumbUrl:{$set:text},
+                                Modal:{
+                                    visThumb:{$set:true}
+                                }
+                            }))
+                        }} style={{width:200,height:40}} src={text}/>
                     )}, 
                     { title: '身份证号码', dataIndex: 'cardNo', key: 'cardNo'}, 
                     { title: '状态', dataIndex: 'state', key: 'state',render:(text)=>(
@@ -108,7 +123,8 @@ class component extends Component{
             update:{
                 remark:'',
                 state:''
-            }
+            },
+            thumbUrl:''
         }
     }
     componentDidMount(){
@@ -276,6 +292,19 @@ class component extends Component{
                     }}>搜索</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                
+                <Modal title="查看大图"
+                   onOk={()=>{
+                        update('set',addons(state,{Modal:{visThumb:{$set:false}}}))
+                   }}
+                   onCancel={()=>{
+                        update('set',addons(state,{Modal:{visThumb:{$set:false}}}))
+                   }}
+                   okText="确认"
+                   cancelText="取消"
+                   visible={state.Modal.visThumb}>
+                    <img style={{width:'100%'}} src={state.thumbUrl}/>
+                </Modal>
                 <Modal title="修改"
                    onOk={()=>{
                         Ajax.post({
