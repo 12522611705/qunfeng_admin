@@ -19,6 +19,10 @@ import CollectorLog from './routers/CollectorLog';
 import AdminUser from './routers/AdminUser';
 // 推文管理
 import Notification from './routers/Notification';
+// 司机管理
+import Driver from './routers/Driver';
+import Card from './routers/Card';
+import Feedback from './routers/Feedback';
 
 
 ReactDOM.render((
@@ -32,6 +36,10 @@ ReactDOM.render((
 				<Route path="/CollectorLog"					component={CollectorLog}/>
 				<Route path="/AdminUser"					component={AdminUser}/>
 				<Route path="/Notification"					component={Notification}/>
+
+				<Route path="/Driver"						component={Driver}/>
+				<Route path="/Card"							component={Card}/>
+				<Route path="/Feedback"						component={Feedback}/>
 	
 
 			</App>

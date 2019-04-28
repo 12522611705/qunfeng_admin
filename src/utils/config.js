@@ -49,6 +49,7 @@ export const config = {
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/list'
 		}
 	},
+	// 推文管理
 	Notification:{
 		urls:{
 			notificationAdd:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationAdd',
@@ -57,7 +58,28 @@ export const config = {
 			notificationPublish:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationPublish',
 			notificationUpdate:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationUpdate'
 		}
+	},
+	// 意见反馈
+	Feedback:{
+		urls:{
+			feedbackList:'http://118.190.145.65:8888/flockpeak-shop/admin/feedbackAdmin/feedbackList'
+		}
+	},
+	// 身份验证管理
+	Card:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/list',
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/update'
+		}
+	},
+	// 司机管理
+	Driver:{
+		urls:{
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/add',
+			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/delete',
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/list',
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/update'
+		}
 	}
-	
 	
 }

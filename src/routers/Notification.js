@@ -45,7 +45,9 @@ class component extends Component{
                 },
                 head:[
                     { title: '推文标题', dataIndex: 'headline', key: 'headline'}, 
-                    { title: '推文缩列图', dataIndex: 'headlineImgUrl', key: 'headlineImgUrl'}, 
+                    { title: '缩列图', dataIndex: 'headlineImgUrl', key: 'headlineImgUrl', render:(text)=>(
+                        <img src={text} width={60}/>
+                    )}, 
                     { title: '作者名字', dataIndex: 'creationRoleName', key: 'creationRoleName'}, 
                     { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'}, 
                     { title: '推文内容', dataIndex: 'text', key: 'text', render:(text)=>(
