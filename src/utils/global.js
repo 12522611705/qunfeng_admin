@@ -134,7 +134,7 @@ const get = (options)=>{
 	
 	const delay = setTimeout(()=>{
 		options.loading && emitter.emit('loading', true);
-	},options.delay)
+	},options.delay || 500)
 	fetch(options.url+'?'+formatSearch(options.params),{
 		type:'get',
 	    headers:{
@@ -178,10 +178,44 @@ const get = (options)=>{
 	})
 
 }
+/**
+ * @desc   图片上传请求
+ * @date   2019-05-10
+ * @author luozhou
+ * @param  [Object]   options
+ * 			@param   options.success   请求成功回掉
+ * 			@param   options.error     请求失败回掉
+ * 			@param   options.progress  上传进度条发生变化时调用
+ * 			@param   options.url       请求路径
+ * 			@param   options.params    请求参数
+ * 			@param   options.loading   是否打开loading
+ * 			@param   options.delay     loading延迟，默认500ms
+ */
+const img = (options)=>{
+	const delay = setTimeout(()=>{
+		options.loading && emitter.emit('loading', true);
+	},options.delay || 500)
+	
+	const serverURL = options.url
+    const xhr = new XMLHttpRequest
+    const fd = new FormData()
 
+    const fn = ()=>{
+
+    }
+  
+    xhr.upload.addEventListener("progress", options.progress && fn, false)
+    xhr.addEventListener("load", options.success && fn, false)
+    xhr.addEventListener("error", options.error && fn, false)
+    xhr.addEventListener("abort", options.error && fn, false)
+    fd.append('file', param.file)
+    xhr.open('POST', serverURL, true)
+    xhr.send(fd)
+}
 
 export const Ajax = {
 	post,
+	file,
 	get
 }
 
