@@ -88,11 +88,11 @@ class component extends Component{
 		               				newRecord:{
 						            	annualAuditTime:{$set:record.annualAuditTime},
 										contractTime:{$set:record.contractTime},
+                                        drivingLicenseTime:{$set:record.drivingLicenseTime},
+                                        entryTime:{$set:record.entryTime},
 										driverAge:{$set:record.driverAge},
 										driverNumber:{$set:record.driverNumber},
 										drivingLicenceType:{$set:record.drivingLicenceType},
-										drivingLicenseTime:{$set:record.drivingLicenseTime},
-										entryTime:{$set:record.entryTime},
 										name:{$set:record.name},
 										tel:{$set:record.tel},
 										imei:{$set:record.imei},
@@ -151,8 +151,8 @@ class component extends Component{
             	driverNumber:params.driverNumber||'',
             	name:params.name||'',
             	drivingLicenceType:params.drivingLicenceType||'',
-            	startTime:params.startTime||'',
-            	endTime:params.endTime||'',
+            	startTime:new Date(params.createTimeStart).getTime()||'',
+            	endTime:new Date(params.createTimeEnd).getTime()||'',
             	isWork:params.isWork||''
             },
             success:(data)=>{
@@ -289,10 +289,17 @@ class component extends Component{
                         <Select.Option value="15">P</Select.Option>    
                     </Select>
                     创建时间搜索：
-                    <RangePicker onChange={(date,dateString)=>{
-                        state.toolbarParams.createTimeStart = dateString[0];
-                        state.toolbarParams.createTimeEnd = dateString[1];
-                        _this.initIndex();
+                    <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                createTimeStart:{
+                                    $set:dateString[0]
+                                },
+                                createTimeEnd:{
+                                    $set:dateString[1]
+                                }    
+                            }
+                        }))
                     }} />
                     工作状态：<Select value={state.toolbarParams.isWork} onChange={(value)=>{
                     	update('set',addons(state,{
@@ -350,8 +357,10 @@ class component extends Component{
                				url = config.Driver.urls.update;
                				params.id = state.record.id;
                			}
+                        if(/\d{18}/.test(Number(params.driverNumber))) return message.info('请输入正确的驾驶证编号');
                			if(!/^1\d{10}$/.test(params.tel)) return message.info('请输入正确的手机号码');
-               			if(params.imei.length != 15) return message.info('请输入正确的15位数组imei号码');
+                        if(params.imei && params.imei.length != 15) return message.info('请输入正确的15位数组imei号码');
+
                			Ajax.post({
 	                        url,
 	                        params,
@@ -432,27 +441,38 @@ class component extends Component{
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="入职时间" > 
                         <DatePicker value={moment(state.newRecord.entryTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={(date,dateString)=>{
-                        	console.log(dateString)
-                        	// update('set',addons(state,{
-                        	// 	newRecord:{
-                        	// 		entryTime:{$set:dateString}
-                        	// 	}
-                        	// }))
+                        	update('set',addons(state,{
+                        		newRecord:{
+                        			entryTime:{$set:dateString}
+                        		}
+                        	}))
                         }} />
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="合同到期时间" > 
-                        <DatePicker value={moment(state.newRecord.contractTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={()=>{
-
+                        <DatePicker value={moment(state.newRecord.contractTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                newRecord:{
+                                    contractTime:{$set:dateString}
+                                }
+                            }))
                         }} />
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="驾驶证年审时间" > 
-                        <DatePicker value={moment(state.newRecord.annualAuditTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={()=>{
-
+                        <DatePicker value={moment(state.newRecord.annualAuditTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                newRecord:{
+                                    annualAuditTime:{$set:dateString}
+                                }
+                            }))
                         }} />
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="驾驶证到期时间" > 
-                        <DatePicker value={moment(state.newRecord.drivingLicenseTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={()=>{
-
+                        <DatePicker value={moment(state.newRecord.drivingLicenseTime||new Date().toLocaleDateString(), 'YYYY/MM/DD')} onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                newRecord:{
+                                    drivingLicenseTime:{$set:dateString}
+                                }
+                            }))
                         }} />
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="绑定的环卫车IMEI编号" > 

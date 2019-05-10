@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Breadcrumb, Input, Icon, Select, Button, Form, Upload, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import moment from 'moment';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -227,6 +228,9 @@ class component extends Component{
                         update('set',addons(state,{
                             editorState:{$set:'add'},
                             Modal:{visAdd:{$set:true}},
+                            fileList:{
+                                $set:[]
+                            },
                             add:{
                                 creationRoleName:{$set:''},
                                 headline:{$set:''},
@@ -289,10 +293,17 @@ class component extends Component{
                         <Select.Option value="2">已发布</Select.Option>     
                     </Select>
                     时间搜索：
-                    <RangePicker onChange={(date,dateString)=>{
-                        state.toolbarParams.createTimeStart = dateString[0];
-                        state.toolbarParams.createTimeEnd = dateString[1];
-                        _this.initIndex();
+                    <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                createTimeStart:{
+                                    $set:dateString[0]
+                                },
+                                createTimeEnd:{
+                                    $set:dateString[1]
+                                }    
+                            }
+                        }))
                     }} />
                     
                 </div>

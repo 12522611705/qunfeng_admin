@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import moment from 'moment';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -63,7 +64,7 @@ class component extends Component{
                     )}, 
                     { title: '身份证号码', dataIndex: 'cardNo', key: 'cardNo'}, 
                     { title: '状态', dataIndex: 'state', key: 'state',render:(text)=>(
-                    	['','待审核','待提交','审核通过','审核不通过'][text]
+                    	['','待审核','待提交',<span style={{color:'#ccc'}}>审核通过</span>,'审核不通过'][text]
                     )}, 
                     { title: '开始时间', dataIndex: 'creationTime', key: 'creationTime'}, 
                     { title: '备注', dataIndex: 'remark', key: 'remark', render:(text,record)=>(
@@ -259,10 +260,17 @@ class component extends Component{
 	                    <Select.Option value="4">审核不通过</Select.Option>
 	                </Select>
                     时间段查询：
-                    <RangePicker onChange={(date,dateString)=>{
-                        state.toolbarParams.createTimeStart = dateString[0];
-                        state.toolbarParams.createTimeEnd = dateString[1];
-                        _this.initIndex();
+                    <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                startTime:{
+                                    $set:dateString[0]
+                                },
+                                endTime:{
+                                    $set:dateString[1]
+                                }    
+                            }
+                        }))
                     }} />
                 </div>
 

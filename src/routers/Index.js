@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker } from 'antd';
+import moment from 'moment';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -19,6 +20,7 @@ const { RangePicker } = DatePicker;
 class component extends Component{
     constructor(props){
         super(props)
+        const _this = this;
         this.update = update.bind(this);
         this.state = {
             // 工具条查询参数
@@ -55,8 +57,8 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
@@ -80,7 +82,8 @@ class component extends Component{
                     { title: '当前账户积分余额', dataIndex: 'integral', key: 'integral',}, 
                     { title: '环保金余额', dataIndex: 'envirGold', key: 'envirGold',}, 
                     { title: '年龄', dataIndex: 'age', key: 'age',}, 
-                    { title: '用户意见反馈', dataIndex: 'opinions', key: 'opinions',}
+                    // { title: '用户意见反馈', dataIndex: 'opinions', key: 'opinions',},
+                    { title: '小区名字', dataIndex: 'plot', key: 'plot',}
                 ],
                 data:[]
             }
@@ -202,10 +205,20 @@ class component extends Component{
                 </div>
                 <div className="main-toolbar">
                     时间段查询：
-                    <RangePicker onChange={(date,dateString)=>{
-                        state.toolbarParams.createTimeStart = dateString[0];
-                        state.toolbarParams.createTimeEnd = dateString[1];
-                        _this.initIndex();
+                    <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                        // state.toolbarParams.createTimeStart = dateString[0];
+                        // state.toolbarParams.createTimeEnd = dateString[1];
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                createTimeStart:{
+                                    $set:dateString[0]
+                                },
+                                createTimeEnd:{
+                                    $set:dateString[1]
+                                }    
+                            }
+                        }))
+                        // _this.initIndex();
                     }} />
                 </div>
                 <div className="main-toolbar">
@@ -221,15 +234,15 @@ class component extends Component{
                                                 pro:{
                                                     $set:el.name
                                                 },
-                                                // city:{
-                                                //     $set:state.address.city[el.sheng][0].name
-                                                // },
-                                                // area:{
-                                                //     $set: state.address.city[el.sheng] && 
-                                                //           state.address.city[el.sheng][0] && 
-                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
-                                                // }
+                                                city:{
+                                                    $set:''//state.address.city[el.sheng][0].name
+                                                },
+                                                area:{
+                                                    $set:''// state.address.city[el.sheng] && 
+                                                          // state.address.city[el.sheng][0] && 
+                                                          // state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
+                                                          // state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
+                                                }
                                             },
                                             address:{
                                                 sheng:{
@@ -260,9 +273,9 @@ class component extends Component{
                                                 city:{
                                                     $set:el.name
                                                 },
-                                                // area:{
-                                                //     $set:state.address.area[state.address.sheng+el.di][0].name
-                                                // }
+                                                area:{
+                                                    $set:''//state.address.area[state.address.sheng+el.di][0].name
+                                                }
                                             },
                                             address:{
                                                 di:{
@@ -302,9 +315,6 @@ class component extends Component{
                             })
                         }
                     </Select>
-                    <Button type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>查询</Button>
                 </div>
                 <div className="main-toolbar">
                     用户来源：
@@ -357,12 +367,9 @@ class component extends Component{
                         <Select.Option value="1">男</Select.Option>
                         <Select.Option value="2">女</Select.Option>
                     </Select>
-                    <Button type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>查询</Button>
                 </div>
                 <div className="main-toolbar">
-                    <Button type="primary" onClick={()=>{
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         state.toolbarParams = {
                             name:'',//用户名
                             tel:'',//手机号码
@@ -400,8 +407,15 @@ class component extends Component{
                             }
                         })
                     }}>重置</Button>
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>查询</Button>
                 </div>
-                <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}
+                    columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <div style={{marginTop:-42,textAlign:'right'}}>
+                    <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
+                </div>
             </div>
         );
     }

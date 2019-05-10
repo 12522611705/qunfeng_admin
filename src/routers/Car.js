@@ -271,6 +271,49 @@ class component extends Component{
                     <Breadcrumb.Item><a href="javascript:;">环卫车列表</a></Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="main-toolbar">
+                    <Button type="primary" onClick={()=>{
+                        update('set',addons(state,{
+                            Modal:{
+                                visRecord:{
+                                    $set:true
+                                }
+                            },
+                            recordType:{
+                                $set:'add'
+                            },
+                            newRecord:{
+                                carName:{
+                                    $set:''
+                                },
+                                // driverName:{
+                                //     $set:''
+                                // },
+                                carNumber:{
+                                    $set:''
+                                },
+                                imei:{
+                                    $set:''
+                                },
+                                type:{
+                                    $set:''
+                                },
+                                pro:{
+                                    $set:''
+                                },
+                                city:{
+                                    $set:''
+                                },
+                                area:{
+                                    $set:''
+                                },
+                                isWord:{
+                                    $set:''
+                                },
+                            }
+                        }))
+                    }}>添加环卫车</Button>
+                </div>
+                <div className="main-toolbar">
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
@@ -346,15 +389,15 @@ class component extends Component{
                                                 pro:{
                                                     $set:el.name
                                                 },
-                                                // city:{
-                                                //     $set:state.address.city[el.sheng][0].name
-                                                // },
-                                                // area:{
-                                                //     $set: state.address.city[el.sheng] && 
-                                                //           state.address.city[el.sheng][0] && 
-                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
-                                                // }
+                                                city:{
+                                                    $set:''//state.address.city[el.sheng][0].name
+                                                },
+                                                area:{
+                                                    $set:'' //state.address.city[el.sheng] && 
+                                                          //state.address.city[el.sheng][0] && 
+                                                          //state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
+                                                          //state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
+                                                }
                                             },
                                             address:{
                                                 sheng:{
@@ -385,9 +428,9 @@ class component extends Component{
                                                 city:{
                                                     $set:el.name
                                                 },
-                                                // area:{
-                                                //     $set:state.address.area[state.address.sheng+el.di][0].name
-                                                // }
+                                                area:{
+                                                    $set:'' //state.address.area[state.address.sheng+el.di][0].name
+                                                }
                                             },
                                             address:{
                                                 di:{
@@ -427,55 +470,10 @@ class component extends Component{
                             })
                         }
                     </Select>
-                    <Button type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>查询</Button>
                 </div>
+                
                 <div className="main-toolbar">
-                    <Button type="primary" onClick={()=>{
-                        update('set',addons(state,{
-                            Modal:{
-                                visRecord:{
-                                    $set:true
-                                }
-                            },
-                            recordType:{
-                                $set:'add'
-                            },
-                            newRecord:{
-                                carName:{
-                                    $set:''
-                                },
-                                // driverName:{
-                                //     $set:''
-                                // },
-                                carNumber:{
-                                    $set:''
-                                },
-                                imei:{
-                                    $set:''
-                                },
-                                type:{
-                                    $set:''
-                                },
-                                pro:{
-                                    $set:''
-                                },
-                                city:{
-                                    $set:''
-                                },
-                                area:{
-                                    $set:''
-                                },
-                                isWord:{
-                                    $set:''
-                                },
-                            }
-                        }))
-                    }}>添加环卫车</Button>
-                </div>
-                <div className="main-toolbar">
-                    <Button type="primary" onClick={()=>{
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         state.toolbarParams = {
                             page:1,
                             pageSize:10,
@@ -500,6 +498,10 @@ class component extends Component{
                             }
                         })
                     }}>重置</Button>
+
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>查询</Button>
                 </div>
                 <Modal title={state.recordType=='add'?'添加环卫车':'修改环卫车记录'}
                    onOk={()=>{
@@ -509,8 +511,8 @@ class component extends Component{
                         }else if(state.recordType=='update'){
                             url  = config.SanitationCarAdmin.urls.update
                         }
-                        if(!_this.isVehicleNumber(state.newRecord.carNumber)) return message.info('请输入的车牌号无效');
-                        if(state.newRecord.imei.length!=15) return message.info('您输入的imei无效');
+                        if(!_this.isVehicleNumber(state.newRecord.carNumber.replace(/\s+/g,""))) return message.info('请输入的车牌号无效');
+                        if(state.newRecord.imei.length!=15) return message.info('请输入IMEI前15位数字');
                         Ajax.post({
                             url,
                             params:{
@@ -562,7 +564,8 @@ class component extends Component{
                         }} value={state.newRecord.imei}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="地址" >
-                        <Select placeholder="--省--" value={state.newRecord.pro} style={{ width: 120, marginRight:10 }}>
+                        <Select value={state.newRecord.pro} style={{ width: 120, marginRight:10 }}>
+                            <Select.Option value="">全部</Select.Option>                        
                             {
                                 state.address.shen.map((el,index)=>{
                                     return <Select.Option value={el.code} key={index}>
@@ -600,7 +603,8 @@ class component extends Component{
                             }
                         </Select>
 
-                        <Select placeholder="--市--" value={state.newRecord.city} style={{ width: 120, marginRight:10 }}>
+                        <Select value={state.newRecord.city} style={{ width: 120, marginRight:10 }}>
+                            <Select.Option value="">全部</Select.Option>                        
                             {
                                 state.address.city[state.address.sheng] && state.address.city[state.address.sheng].map((el,index)=>{
                                     return <Select.Option value={el.code} key={index}>
@@ -628,7 +632,8 @@ class component extends Component{
                                 })
                             }
                         </Select>
-                        <Select placeholder="--区--" value={state.newRecord.area} style={{ width: 120, marginRight:10 }}>
+                        <Select value={state.newRecord.area} style={{ width: 120, marginRight:10 }}>
+                            <Select.Option value="">全部</Select.Option>
                             {
                                 state.address.area[state.address.sheng+state.address.di] && 
                                 state.address.area[state.address.sheng+state.address.di].map((el,index)=>{

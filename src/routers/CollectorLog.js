@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import moment from 'moment';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -146,7 +147,9 @@ class component extends Component{
         Ajax.get({
             url:config.CollectorLog.urls.list,
             params:{
-                ...params
+                ...params,
+                startTime:new Date(params.startTime).getTime(),//开始时间
+                endTime:new Date(params.endTime).getTime(),//结束时间
             },
             success:(data)=>{
                 _this.update('set',addons(_this.state,{
@@ -245,10 +248,17 @@ class component extends Component{
                 </div>
                 <div className="main-toolbar">
                     时间段查询：
-                    <RangePicker onChange={(date,dateString)=>{
-                        state.toolbarParams.startTime = dateString[0];
-                        state.toolbarParams.endTime = dateString[1];
-                        _this.initIndex();
+                    <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                startTime:{
+                                    $set:dateString[0]
+                                },
+                                endTime:{
+                                    $set:dateString[1]
+                                }    
+                            }
+                        }))
                     }} />
                 </div>
                 <div className="main-toolbar">
@@ -264,15 +274,15 @@ class component extends Component{
                                                 pro:{
                                                     $set:el.name
                                                 },
-                                                // city:{
-                                                //     $set:state.address.city[el.sheng][0].name
-                                                // },
-                                                // area:{
-                                                //     $set: state.address.city[el.sheng] && 
-                                                //           state.address.city[el.sheng][0] && 
-                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                //           state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
-                                                // }
+                                                city:{
+                                                    $set:''//state.address.city[el.sheng][0].name
+                                                },
+                                                area:{
+                                                    $set:''// state.address.city[el.sheng] && 
+                                                          // state.address.city[el.sheng][0] && 
+                                                          // state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
+                                                          // state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
+                                                }
                                             },
                                             address:{
                                                 sheng:{
@@ -303,9 +313,9 @@ class component extends Component{
                                                 city:{
                                                     $set:el.name
                                                 },
-                                                // area:{
-                                                //     $set:state.address.area[state.address.sheng+el.di][0].name
-                                                // }
+                                                area:{
+                                                    $set:''//state.address.area[state.address.sheng+el.di][0].name
+                                                }
                                             },
                                             address:{
                                                 di:{
@@ -345,9 +355,7 @@ class component extends Component{
                             })
                         }
                     </Select>
-                    <Button type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>查询</Button>
+                    
                 </div>
                 <div className="main-toolbar">
                     环卫车类型：
@@ -364,12 +372,10 @@ class component extends Component{
                         <Select.Option value="1">餐厨垃圾环卫车</Select.Option>
                         <Select.Option value="2">其他垃圾环卫车</Select.Option>
                     </Select>
-                    <Button type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>查询</Button>
+                    
                 </div>
                 <div className="main-toolbar">
-                    <Button type="primary" onClick={()=>{
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         state.toolbarParams = {
                             driverName:'',//用户名
                             plotName:'',//手机号码
@@ -405,6 +411,9 @@ class component extends Component{
                             }
                         })
                     }}>重置</Button>
+                    <Button type="primary" onClick={()=>{
+                        _this.initIndex();
+                    }}>查询</Button>
                 </div>
                 <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
                
