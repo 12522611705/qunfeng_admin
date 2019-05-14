@@ -195,7 +195,7 @@ const img = (options)=>{
 	const delay = setTimeout(()=>{
 		options.loading && emitter.emit('loading', true);
 	},options.delay || 500)
-	
+
 	const serverURL = options.url
     const xhr = new XMLHttpRequest
     const fd = new FormData()
@@ -208,14 +208,14 @@ const img = (options)=>{
     xhr.addEventListener("load", options.success && fn, false)
     xhr.addEventListener("error", options.error && fn, false)
     xhr.addEventListener("abort", options.error && fn, false)
-    fd.append('file', param.file)
+    fd.append('file', options.params.file)
     xhr.open('POST', serverURL, true)
     xhr.send(fd)
 }
 
 export const Ajax = {
 	post,
-	file,
+	img,
 	get
 }
 

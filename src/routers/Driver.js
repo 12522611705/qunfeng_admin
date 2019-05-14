@@ -341,7 +341,11 @@ class component extends Component{
                         _this.initIndex();
                     }}>搜索</Button>
                 </div>
-                <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}  
+                    columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <div style={{marginTop:-42,textAlign:'right'}}>
+                    <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
+                </div>
                	<Modal title={state.editorType=='add'?'添加司机':'修改司机信息'}
                		okText="确定"
                		cancelText="取消"

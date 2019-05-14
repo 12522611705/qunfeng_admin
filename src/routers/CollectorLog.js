@@ -60,8 +60,8 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
@@ -148,8 +148,9 @@ class component extends Component{
             url:config.CollectorLog.urls.list,
             params:{
                 ...params,
-                startTime:new Date(params.startTime).getTime(),//开始时间
-                endTime:new Date(params.endTime).getTime(),//结束时间
+                page:_this.state.indexTable.pagination.current,
+                startTime:new Date(params.startTime).getTime() || '',//开始时间
+                endTime:new Date(params.endTime).getTime() || '',//结束时间
             },
             success:(data)=>{
                 _this.update('set',addons(_this.state,{
@@ -415,8 +416,13 @@ class component extends Component{
                         _this.initIndex();
                     }}>查询</Button>
                 </div>
-                <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
-               
+                
+                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination} 
+                    columns={state.indexTable.head} dataSource={state.indexTable.data} />
+
+                <div style={{marginTop:-42,textAlign:'right'}}>
+                    <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
+                </div>
             </div>
         );
     }

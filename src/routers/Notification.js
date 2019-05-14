@@ -40,8 +40,8 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
@@ -51,11 +51,16 @@ class component extends Component{
                     )}, 
                     { title: '作者名字', dataIndex: 'creationRoleName', key: 'creationRoleName'}, 
                     { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'}, 
-                    { title: '推文内容', dataIndex: 'text', key: 'text', render:(text)=>(
-                        <div style={{width:200,wordBreak: 'break-all'}}>{text}</div>
+                    { title: '推文内容', dataIndex: 'text', key: 'text', render:(text,record)=>(
+                        <a href="javascript:;" onClick={()=>{
+                            Modal.info({
+                                title:record.headline,
+                                // content:<div style={{wordBreak: 'break-all'}}>{text}</div>
+                                content:<div dangerouslySetInnerHTML={{__html:text}} style={{wordBreak: 'break-all'}}></div>
+                            })
+                        }}>查看</a>
                     )}, 
-                    { title: '状态', dataIndex: 'status', key: 'status',render:(text
-                        )=>(
+                    { title: '状态', dataIndex: 'status', key: 'status',render:(text)=>(
                         ['','待发布','已发布'][text]
                     )},
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
@@ -337,8 +342,11 @@ class component extends Component{
                             tableIds:{$set:ids}
                         }));   
                     }
-                }} rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
-
+                }} rowKey={record=>record.id} pagination={state.indexTable.pagination}
+                columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <div style={{marginTop:-42,textAlign:'right'}}>
+                    <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
+                </div>
                 <Modal title={state.editorState=='add'?'添加推文':'修改推文'}
                     onCancel={()=>{
                         update('set',addons(state,{Modal:{visAdd:{$set:false}}}))

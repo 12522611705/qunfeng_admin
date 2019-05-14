@@ -34,16 +34,16 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
+                    { title: 'ID', dataIndex: 'id', key: 'id' }, 
                     { title: '用户来源', dataIndex: 'source', key: 'source', render:(text,record)=>(
                         ['','H5','安卓','IOS'][text]
                     ) }, 
                     { title: '反馈内容', dataIndex: 'content', key: 'content' }, 
-                    { title: 'ID', dataIndex: 'id', key: 'id' }, 
                     { title: '用户ID', dataIndex: 'userId', key: 'userId' }, 
                     { title: '意见反馈图片', dataIndex: 'imgUrls', key: 'imgUrls' ,render:(text,record)=>(
                         <a href="javascript:;" onClick={()=>{
@@ -192,7 +192,12 @@ class component extends Component{
                         _this.initIndex();
                     }}>搜索</Button>
                 </div>
-                <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}
+                    columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <div style={{marginTop:-42,textAlign:'right'}}>
+                    <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
+                </div>
+
                 <Modal title="图片查看" 
                     okText="确定"
                     cancelText="取消"

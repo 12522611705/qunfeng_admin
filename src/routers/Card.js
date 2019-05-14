@@ -64,7 +64,7 @@ class component extends Component{
                     )}, 
                     { title: '身份证号码', dataIndex: 'cardNo', key: 'cardNo'}, 
                     { title: '状态', dataIndex: 'state', key: 'state',render:(text)=>(
-                    	['','待审核','待提交',<span style={{color:'#ccc'}}>审核通过</span>,'审核不通过'][text]
+                    	['','待审核','待提交','审核通过','审核不通过'][text]
                     )}, 
                     { title: '开始时间', dataIndex: 'creationTime', key: 'creationTime'}, 
                     { title: '备注', dataIndex: 'remark', key: 'remark', render:(text,record)=>(
@@ -83,7 +83,8 @@ class component extends Component{
                     )},
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
-                            <a href="javascript:;" onClick={()=>{
+                            <a style={{color:record.state==3 || record.state==4 ? '#ccc' : '#1890ff'}} href="javascript:;" onClick={()=>{
+                                if(record.state == 3 || record.state == 4 ) return;
                                 Ajax.post({
                                     url:config.Card.urls.update,
                                     params:{
@@ -96,7 +97,8 @@ class component extends Component{
                                 })
                             }}>通过</a>
                             <Divider type="vertical"/>
-                            <a href="javascript:;" onClick={()=>{
+                            <a style={{color:record.state==3 || record.state==4 ? '#ccc' : '#1890ff'}} href="javascript:;" onClick={()=>{
+                                if(record.state == 3 || record.state == 4 ) return;
                                 Ajax.post({
                                     url:config.Card.urls.update,
                                     params:{
@@ -299,8 +301,11 @@ class component extends Component{
                         _this.initIndex();
                     }}>搜索</Button>
                 </div>
-                <Table rowKey={record=>record.id} columns={state.indexTable.head} dataSource={state.indexTable.data} />
-                
+                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}
+                    columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <div style={{marginTop:-42,textAlign:'right'}}>
+                    <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
+                </div>
                 <Modal title="查看大图"
                    onOk={()=>{
                         update('set',addons(state,{Modal:{visThumb:{$set:false}}}))
