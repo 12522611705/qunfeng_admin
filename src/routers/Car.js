@@ -10,7 +10,10 @@ import update from 'react-update';
 
 import { Ajax, formatSearch } from '../utils/global';
 import { config } from '../utils/config';
-import Cities from '../utils/Cities';
+
+// 组件
+import Cascader from '../components/Cascader';
+
 // import { createForm } from 'rc-form';
 import BMap  from 'BMap';
 const BMAP_NORMAL_MAP =window.BMAP_NORMAL_MAP;
@@ -233,15 +236,6 @@ class component extends Component{
                 ],
                 data:[]
             },
-            // 省市区查询
-            address:{
-                di:'',
-                sheng:'',
-                xian:'',
-                shen:[],
-                city:{},
-                area:{}
-            },
             toolbarParams:{
                 carName:'',
                 // driverName:'',
@@ -250,6 +244,7 @@ class component extends Component{
                 pro:'',
                 city:'',
                 area:'',
+                street:'',
                 type:'',
                 adminRole:'',
                 tel:''
@@ -269,29 +264,13 @@ class component extends Component{
                 pro:'',
                 city:'',
                 area:'',
+                street:'',
                 isWord:''
             }
         }
     }
     componentDidMount(){
-        
-
         this.initIndex()
-        // console.log(Cities)
-        Cities.forEach((el)=>{
-            if(el.level==1){
-                this.state.address.shen.push(el)
-            }
-            if(el.level==2){
-                this.state.address.city[el.sheng] = this.state.address.city[el.sheng]||[];
-                this.state.address.city[el.sheng].push(el)
-            }
-            if(el.level==3){
-                this.state.address.area[el.sheng+el.di] = this.state.address.area[el.sheng+el.di]||[];
-                this.state.address.area[el.sheng+el.di].push(el)
-            }
-        })
-        this.update('set',addons(this.state,{}));
     }
     componentWillUnmount() {
 
@@ -318,6 +297,7 @@ class component extends Component{
                     pro:params.pro||'',
                     city:params.city||'',
                     area:params.area||'',
+                    street:params.street||'',
                     tel:params.tel||'',
                     adminRole:params.adminRole||'',
                     type:params.type||'',
@@ -511,98 +491,17 @@ class component extends Component{
                 </div>
                 <div className="main-toolbar">
                     详细地址：
-                    <Select value={state.toolbarParams.pro} style={{ width: 120, marginRight:10 }}>
-                        <Select.Option value=''>全部</Select.Option>
-                        {
-                            state.address.shen.map((el,index)=>{
-                                return <Select.Option value={el.code} key={index}>
-                                    <div onClick={()=>{
-                                        update('set',addons(state,{
-                                            toolbarParams:{
-                                                pro:{
-                                                    $set:el.name
-                                                },
-                                                city:{
-                                                    $set:''//state.address.city[el.sheng][0].name
-                                                },
-                                                area:{
-                                                    $set:'' //state.address.city[el.sheng] && 
-                                                          //state.address.city[el.sheng][0] && 
-                                                          //state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                          //state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
-                                                }
-                                            },
-                                            address:{
-                                                sheng:{
-                                                    $set:el.sheng
-                                                },
-                                                // di:{
-                                                //     $set:'01'
-                                                // },
-                                                // xian:{
-                                                //     $set:'00'
-                                                // }
-                                            }
-                                        }))
-                                    }}>{el.name}</div>
-                                </Select.Option>
-                            })
-                        }
-                    </Select>
-
-                    <Select value={state.toolbarParams.city} style={{ width: 120, marginRight:10 }}>
-                        <Select.Option value=''>全部</Select.Option>
-                        {
-                            state.address.city[state.address.sheng] && state.address.city[state.address.sheng].map((el,index)=>{
-                                return <Select.Option value={el.code} key={index}>
-                                    <div onClick={()=>{
-                                        update('set',addons(state,{
-                                            toolbarParams:{
-                                                city:{
-                                                    $set:el.name
-                                                },
-                                                area:{
-                                                    $set:'' //state.address.area[state.address.sheng+el.di][0].name
-                                                }
-                                            },
-                                            address:{
-                                                di:{
-                                                    $set:el.di
-                                                },
-                                                // xian:{
-                                                //     $set:'00'
-                                                // }
-                                            }
-                                        }))
-                                    }}>{el.name}</div>
-                                </Select.Option>
-                            })
-                        }
-                    </Select>
-                    <Select value={state.toolbarParams.area} style={{ width: 120, marginRight:10 }}>
-                        <Select.Option value=''>全部</Select.Option>
-                        {
-                            state.address.area[state.address.sheng+state.address.di] && 
-                            state.address.area[state.address.sheng+state.address.di].map((el,index)=>{
-                                return <Select.Option value={el.code} key={index}>
-                                     <div onClick={()=>{
-                                        update('set',addons(state,{
-                                            toolbarParams:{
-                                                area:{
-                                                    $set:el.name
-                                                }
-                                            },
-                                            address:{
-                                                di:{
-                                                    $set:el.di
-                                                }
-                                            }
-                                        }))
-                                    }}>{el.name}</div>
-                                </Select.Option>
-                            })
-                        }
-                    </Select>
+                    <Cascader data={state.toolbarParams} onChange={(data)=>{
+                        console.log(data)
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                pro:{$set:data.pro},
+                                city:{$set:data.city},
+                                area:{$set:data.area},
+                                street:{$set:data.street}
+                            }
+                        }))
+                    }}/>
                 </div>
                 
                 <div className="main-toolbar">
@@ -617,6 +516,7 @@ class component extends Component{
                             pro:'',
                             city:'',
                             area:'',
+                            street:'',
                             type:'',
                             adminRole:'',
                             tel:''
@@ -631,6 +531,7 @@ class component extends Component{
                                 pro:{$set:''},//省
                                 city:{$set:''},//市
                                 area:{$set:''},//市
+                                street:{$set:''},//市
                                 type:{$set:''},//环卫车类型
                                 adminRole:{$set:''},//环卫车类型
                                 tel:{$set:''},//环卫车类型
@@ -673,6 +574,7 @@ class component extends Component{
                                 pro:state.newRecord.pro,
                                 city:state.newRecord.city,
                                 area:state.newRecord.area,
+                                street:state.newRecord.street,
                                 isWord:state.newRecord.isWord,
                                 id:state.recordType=='update'?state.record.id:''
                             },
@@ -719,98 +621,21 @@ class component extends Component{
                         }} value={state.newRecord.tel}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="地址" >
-                        <Select value={state.newRecord.pro} style={{ width: 120, marginRight:10 }}>
-                            <Select.Option value="">全部</Select.Option>                        
-                            {
-                                state.address.shen.map((el,index)=>{
-                                    return <Select.Option value={el.code} key={index}>
-                                        <div onClick={()=>{
-                                            update('set',addons(state,{
-                                                newRecord:{
-                                                    pro:{
-                                                        $set:el.name
-                                                    },
-                                                    city:{
-                                                        $set:state.address.city[el.sheng][0].name
-                                                    },
-                                                    area:{
-                                                        $set: state.address.city[el.sheng] && 
-                                                              state.address.city[el.sheng][0] && 
-                                                              state.address.area[el.sheng+state.address.city[el.sheng][0].di] && 
-                                                              state.address.area[el.sheng+state.address.city[el.sheng][0].di][0].name
-                                                    }
-                                                },
-                                                address:{
-                                                    sheng:{
-                                                        $set:el.sheng
-                                                    },
-                                                    // di:{
-                                                    //     $set:'01'
-                                                    // },
-                                                    // xian:{
-                                                    //     $set:'00'
-                                                    // }
-                                                }
-                                            }))
-                                        }}>{el.name}</div>
-                                    </Select.Option>
-                                })
-                            }
-                        </Select>
-
-                        <Select value={state.newRecord.city} style={{ width: 120, marginRight:10 }}>
-                            <Select.Option value="">全部</Select.Option>                        
-                            {
-                                state.address.city[state.address.sheng] && state.address.city[state.address.sheng].map((el,index)=>{
-                                    return <Select.Option value={el.code} key={index}>
-                                        <div onClick={()=>{
-                                            update('set',addons(state,{
-                                                newRecord:{
-                                                    city:{
-                                                        $set:el.name
-                                                    },
-                                                    area:{
-                                                        $set:state.address.area[state.address.sheng+el.di][0].name
-                                                    }
-                                                },
-                                                address:{
-                                                    di:{
-                                                        $set:el.di
-                                                    },
-                                                    // xian:{
-                                                    //     $set:'00'
-                                                    // }
-                                                }
-                                            }))
-                                        }}>{el.name}</div>
-                                    </Select.Option>
-                                })
-                            }
-                        </Select>
-                        <Select value={state.newRecord.area} style={{ width: 120, marginRight:10 }}>
-                            <Select.Option value="">全部</Select.Option>
-                            {
-                                state.address.area[state.address.sheng+state.address.di] && 
-                                state.address.area[state.address.sheng+state.address.di].map((el,index)=>{
-                                    return <Select.Option value={el.code} key={index}>
-                                         <div onClick={()=>{
-                                            update('set',addons(state,{
-                                                newRecord:{
-                                                    area:{
-                                                        $set:el.name
-                                                    }
-                                                },
-                                                address:{
-                                                    di:{
-                                                        $set:el.di
-                                                    }
-                                                }
-                                            }))
-                                        }}>{el.name}</div>
-                                    </Select.Option>
-                                })
-                            }
-                        </Select>
+                        {
+                            state.Modal.visRecord ?
+                            <Cascader data={state.newRecord} onChange={(data)=>{
+                                console.log(data)
+                                update('set',addons(state,{
+                                    newRecord:{
+                                        pro:{$set:data.pro},
+                                        city:{$set:data.city},
+                                        area:{$set:data.area},
+                                        street:{$set:data.street}
+                                    }
+                                }))
+                            }}/>:''    
+                        }
+                        
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="是否在工作中" > 
                         <Select placeholder="请选择是否在工作中" value={state.newRecord.isWord} style={{ width: '100%' }} onChange={(value)=>{

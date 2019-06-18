@@ -1,4 +1,8 @@
 export const config = {
+	// 公用接口
+	urls:{
+		streetList:'http://118.190.145.65:8888/flockpeak-shop/atlasCenter/streetList'
+	},
 	// 用户列表
 	UserAdmin:{
 		urls:{
