@@ -10,7 +10,8 @@ export const config = {
 			adminUserDetailsByToken:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserDetailsByToken',
 			adminUserList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserList',
 			deleteUser:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/deleteUser',
-			update:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/update'
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/update',
+			details:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/details'
 		},
 		router:{},
 		permission:{}
@@ -22,13 +23,30 @@ export const config = {
 			listAll:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/listAll'
 		}
 	},
+	// 后台用户等级积分管理
+	UserGradeLog:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/userGradeLog/list',
+			details:'http://118.190.145.65:8888/flockpeak-shop/admin/userGradeLog/details'
+		}
+	},
+	// 用户环保金额管理
+	WalletAdmin:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/walletAdmin/list',
+			details:'http://118.190.145.65:8888/flockpeak-shop/admin/walletAdmin/details'
+		}
+	},
 	// 环卫车管理
 	SanitationCarAdmin:{
 		urls:{
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/list',		
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/update',		
 			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/delete',		
-			add:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/add',		
+			details:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/details',		
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/add',	
+			exportSanitationCarExcel:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/exportSanitationCarExcel',
+			sanitationCarExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/sanitationCarExcel',
 		}
 	},
 	// 角色管理
@@ -46,7 +64,9 @@ export const config = {
 	// 收运费记录
 	CollectorLog:{
 		urls:{
-			list:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/list'
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/list',
+			exportCollectorLogExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportCollectorLogExcel'
+
 		}
 	},
 	// 推文管理

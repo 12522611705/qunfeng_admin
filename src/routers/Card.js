@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree } from 'antd';
 import moment from 'moment';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -121,6 +122,11 @@ class component extends Component{
             	endTime:'',
             	cardNo:'',
             	state:'',
+                userName:'',
+                adminName:'',
+                userType:'',
+                updateStartTime:'',
+                updateEndTime:'',
             	name:''
             },
             update:{
@@ -151,10 +157,15 @@ class component extends Component{
                 page:_this.state.indexTable.pagination.current,
                 pageSize:_this.state.indexTable.pagination.pageSize,
             	tel:params.tel||'',
-            	startTime:params.startTime||'',
-            	endTime:params.endTime||'',
+            	startTime:new Date(params.startTime).getTime()||'',
+            	endTime:new Date(params.endTime).getTime()||'',
             	cardNo:params.cardNo||'',
             	state:params.state||'',
+                userName:params.userName||'',
+                adminName:params.adminName||'',
+                userType:params.userType||'',
+                updateStartTime:new Date(params.updateStartTime).getTime()||'',
+                updateEndTime:new Date(params.updateEndTime).getTime()||'',
             	name:params.name||''
             },
             success:(data)=>{
@@ -201,6 +212,20 @@ class component extends Component{
                     <Breadcrumb.Item><a href="javascript:;">身份验证管理</a></Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="main-toolbar">
+
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                userName:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.userName} 
+                    placeholder="请输入用户名"
+                    addonBefore={<span>用户名</span>} 
+                    style={{ width: 300, marginRight: 10 }}/>
+                    
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
@@ -212,25 +237,29 @@ class component extends Component{
                     }} value={state.toolbarParams.tel} 
                     placeholder="请输入电话号码"
                     addonBefore={<span>电话号码</span>} 
-                    style={{ width: 300, marginRight: 10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
-                    <Input onChange={(e)=>{
-                        update('set',addons(state,{
+                    style={{ width: 300, marginRight: 10 }}/>
+
+                    用户类别：<Select value={state.toolbarParams.userType} onChange={(value)=>{
+                         update('set',addons(state,{
                             toolbarParams:{
-                                cardNo:{
-                                    $set:e.target.value
-                                }    
+                                userType:{$set:value}
                             }
-                        }))
-                    }} value={state.toolbarParams.cardNo} 
-                    placeholder="请输入身份证号"
-                    addonBefore={<span>身份证号</span>} 
-                    style={{ width: 300, marginRight: 10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
+                         }))
+                    }} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>
+                        <Select.Option value="0">普通用户</Select.Option>
+                        <Select.Option value="1">保洁员</Select.Option>
+                        <Select.Option value="2">物业公司工作人员</Select.Option>
+                        <Select.Option value="3">街道人员</Select.Option>
+                        <Select.Option value="4">城管局</Select.Option>
+                        <Select.Option value="5">司机</Select.Option>
+                        <Select.Option value="6">公司人员</Select.Option>
+                    </Select>
+
+                    
+                </div>
+                <div className="main-toolbar">
+
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
@@ -240,15 +269,60 @@ class component extends Component{
                             }
                         }))
                     }} value={state.toolbarParams.name} 
-                    placeholder="请输入身份证名字"
-                    addonBefore={<span>身份证名字</span>} 
-                    style={{ width: 300, marginRight: 10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
+                    placeholder="请输入姓名"
+                    addonBefore={<span>姓名</span>} 
+                    style={{ width: 300, marginRight: 10 }}/>
+
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                cardNo:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.cardNo} 
+                    placeholder="请输入证件号码"
+                    addonBefore={<span>证件号码</span>} 
+                    style={{ width: 300, marginRight: 10 }}/>
                 </div>
                 <div className="main-toolbar">
-	                状态：<Select value={state.toolbarParams.state} onChange={(value)=>{
+                    提交时间：
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} 
+                        style={{marginRight:10}}
+                        onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    startTime:{
+                                        $set:dateString[0]
+                                    },
+                                    endTime:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
+                    审核时间：
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.updateStartTime ? [moment(state.toolbarParams.updateStartTime, 'YYYY/MM/DD'),moment(state.toolbarParams.updateEndTime, 'YYYY/MM/DD')] : []} 
+                        onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    updateStartTime:{
+                                        $set:dateString[0]
+                                    },
+                                    updateEndTime:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
+                </div>
+                <div className="main-toolbar">
+	                审核状态：<Select value={state.toolbarParams.state} onChange={(value)=>{
                          update('set',addons(state,{
                             toolbarParams:{
                                 state:{$set:value}
@@ -261,19 +335,15 @@ class component extends Component{
 	                    <Select.Option value="3">审核通过</Select.Option>
 	                    <Select.Option value="4">审核不通过</Select.Option>
 	                </Select>
-                    时间段查询：
-                    <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                    审核人：<Input type="text" style={{width:200}} value={state.toolbarParams.adminName} 
+                    placeholder="请输入审核人姓名"
+                    onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                startTime:{
-                                    $set:dateString[0]
-                                },
-                                endTime:{
-                                    $set:dateString[1]
-                                }    
+                                adminName:{$set:e.target.value}
                             }
                         }))
-                    }} />
+                    }}/>
                 </div>
 
                 <div style={{textAlign:"right"}} className="main-toolbar">
@@ -284,6 +354,11 @@ class component extends Component{
                             endTime:'',
                             cardNo:'',
                             state:'',
+                            userName:'',
+                            adminName:'',
+                            userType:'',
+                            updateStartTime:'',
+                            updateEndTime:'',
                             name:''
                         }
                         _this.initIndex({
@@ -293,6 +368,11 @@ class component extends Component{
                                 endTime:{$set:''},
                                 cardNo:{$set:''},
                                 state:{$set:''},
+                                userName:{$set:''},
+                                adminName:{$set:''},
+                                userType:{$set:''},
+                                updateStartTime:{$set:''},
+                                updateEndTime:{$set:''},
                                 name:{$set:''},
                             }
                         })

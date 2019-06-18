@@ -88,7 +88,7 @@ const post = (options)=>{
 		// 9997 token过期
 		if(json.code == 9997){
 			localStorage.setItem('token','');
-            // window.location.reload();
+            window.location.reload();
             return message.error(json.msg)
 		}
 		// 9999系统异常 9998没有操作权限
@@ -149,7 +149,7 @@ const get = (options)=>{
 		// 9997 token过期
 		if(json.code == 9997){
 			localStorage.setItem('token','');
-            // window.location.reload();
+            window.location.reload();
             message.error(json.msg)
 		}
 		// 9999系统异常 9998没有操作权限

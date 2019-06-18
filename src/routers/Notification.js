@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Upload, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Upload, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree } from 'antd';
 import moment from 'moment';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -45,46 +46,29 @@ class component extends Component{
                     }
                 },
                 head:[
-                    { title: '推文标题', dataIndex: 'headline', key: 'headline'}, 
+                    { title: 'ID', dataIndex: 'id', key: 'id'}, 
+                    { title: '标题', dataIndex: 'headline', key: 'headline'}, 
                     { title: '缩列图', dataIndex: 'headlineImgUrl', key: 'headlineImgUrl', render:(text)=>(
                         <img src={text} width={60}/>
                     )}, 
-                    { title: '作者名字', dataIndex: 'creationRoleName', key: 'creationRoleName'}, 
+                    { title: '作者', dataIndex: 'creationRoleName', key: 'creationRoleName'}, 
                     { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'}, 
                     { title: '推文内容', dataIndex: 'text', key: 'text', render:(text,record)=>(
                         <a href="javascript:;" onClick={()=>{
                             Modal.info({
                                 title:record.headline,
                                 // content:<div style={{wordBreak: 'break-all'}}>{text}</div>
-                                content:<div dangerouslySetInnerHTML={{__html:text}} style={{wordBreak: 'break-all'}}></div>
+                                content:<div className="notificationContent" dangerouslySetInnerHTML={{__html:text}} style={{wordBreak: 'break-all'}}></div>
                             })
                         }}>查看</a>
                     )}, 
                     { title: '状态', dataIndex: 'status', key: 'status',render:(text)=>(
                         ['','待发布','已发布'][text]
                     )},
+                    { title: '发布时间', dataIndex: 'time', key: 'time' },
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
-                            <a href="javascript:;" onClick={()=>{
-                                Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要删除该推文吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.Notification.urls.notificationDelete,
-                                            params:{
-                                                id:[record.id]
-                                            },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>删除</a>
-                            <Divider type="vertical" />
+                            
                             <a href="javascript:;" onClick={()=>{
                                 Modal.confirm({
                                     title:'提示',
@@ -126,6 +110,26 @@ class component extends Component{
                                     }
                                 }))
                             }}>修改</a>
+                            <Divider type="vertical" />
+                            <a href="javascript:;" onClick={()=>{
+                                Modal.confirm({
+                                    title:'提示',
+                                    content:'你确定要删除该推文吗？',
+                                    okText:'确定',
+                                    cancelText:'取消',
+                                    onOk(){
+                                        Ajax.post({
+                                            url:config.Notification.urls.notificationDelete,
+                                            params:{
+                                                id:[record.id]
+                                            },
+                                            success:(data)=>{
+                                                _this.initIndex();
+                                            }
+                                        })
+                                    }
+                                })
+                            }}>删除</a>
                         </span>
                     )},
 
@@ -134,6 +138,9 @@ class component extends Component{
             },
             toolbarParams:{
                 status:'',
+                headline:'',
+                startUpdateTime:'',
+                endUpdateTime:'',
                 createTimeStart:'',
                 createTimeEnd:''
             },
@@ -179,11 +186,14 @@ class component extends Component{
         Ajax.get({
             url:config.Notification.urls.notificationList,
             params:{
-                status:params.status,
+                status:params.status||'',
+                headline:params.headLine||'',
                 page:_this.state.indexTable.pagination.current||1,
                 pageSize:_this.state.indexTable.pagination.pageSize||10,
                 startTime:new Date(params.createTimeStart).getTime() || '',
-                endTime:new Date(params.createTimeEnd).getTime() || ''
+                endTime:new Date(params.createTimeEnd).getTime() || '',
+                startUpdateTime:new Date(params.startUpdateTime).getTime() || '',
+                endUpdateTime:new Date(params.endUpdateTime).getTime() || ''
             },
             success:(data)=>{
                 _this.update('set',addons(_this.state,{
@@ -290,38 +300,81 @@ class component extends Component{
                 <div className="main-toolbar">
                     推文状态：
                     <Select value={state.toolbarParams.status} onChange={(value)=>{
-                        state.toolbarParams.status = value;
-                        _this.initIndex();
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                status:{
+                                    $set:value
+                                } 
+                            }
+                        }))
                     }} style={{ width: 120, marginRight:10 }}>
                         <Select.Option value="">全部</Select.Option>     
                         <Select.Option value="1">待发布</Select.Option>     
                         <Select.Option value="2">已发布</Select.Option>     
                     </Select>
-                    时间搜索：
-                    <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                    推文标题：
+                    <Input type='text' style={{width:200}} value={state.toolbarParams.headline} onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                createTimeStart:{
-                                    $set:dateString[0]
-                                },
-                                createTimeEnd:{
-                                    $set:dateString[1]
-                                }    
+                                headline:{
+                                    $set:e.target.value
+                                } 
                             }
                         }))
-                    }} />
+                    }}/>
                     
+                </div>
+                <div className="main-toolbar">
+                    创建时间：
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} 
+                        style={{marginRight:10}}
+                        onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    createTimeStart:{
+                                        $set:dateString[0]
+                                    },
+                                    createTimeEnd:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
+                    发布时间：
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.startUpdateTime ? [moment(state.toolbarParams.startUpdateTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endUpdateTime, 'YYYY/MM/DD')] : []} 
+                        onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    startUpdateTime:{
+                                        $set:dateString[0]
+                                    },
+                                    endUpdateTime:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
                 </div>
                 <div style={{textAlign:"right"}} className="main-toolbar">
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         state.toolbarParams={
                             status:'',
+                            headline:'',
+                            startUpdateTime:'',
+                            endUpdateTime:'',
                             createTimeStart:'',
                             createTimeEnd:''
                         }
                         _this.initIndex({
                             toolbarParams:{
                                 status:{$set:''},
+                                headLine:{$set:''},
+                                startUpdateTime:{$set:''},
+                                endUpdateTime:{$set:''},
                                 createTimeStart:{$set:''},
                                 createTimeEnd:{$set:''},
                             }

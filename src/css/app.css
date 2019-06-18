@@ -254,6 +254,9 @@
 :global(#app){
     height:100%;
 }
+:global(.notificationContent img){
+    max-width: 100%;
+}
 .main{
     height: calc(100% - 60px);
     position: relative;

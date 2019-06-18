@@ -24,6 +24,9 @@ import Driver from './routers/Driver';
 import Card from './routers/Card';
 import Feedback from './routers/Feedback';
 
+// 欢迎登录
+import Welcome from './routers/Welcome';
+
 
 ReactDOM.render((
 	<HashRouter>
@@ -40,6 +43,7 @@ ReactDOM.render((
 				<Route path="/Driver"						component={Driver}/>
 				<Route path="/Card"							component={Card}/>
 				<Route path="/Feedback"						component={Feedback}/>
+				<Route path="/Welcome"						component={Welcome}/>
 	
 
 			</App>

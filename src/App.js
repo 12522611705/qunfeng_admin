@@ -380,6 +380,7 @@ class component extends Component{
                                         },
                                         success:(data)=>{
                                             localStorage.setItem('token',data);
+                                            props.history.push('/Welcome');
                                             window.location.reload();
                                         }
                                     })

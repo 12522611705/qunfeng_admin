@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree } from 'antd';
 import moment from 'moment';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, formatSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
@@ -21,6 +22,16 @@ class component extends Component{
     constructor(props){
         super(props)
         const _this = this;
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 7 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 15 },
+          },
+        };
         this.update = update.bind(this);
         this.state = {
             Modal:{
@@ -43,6 +54,8 @@ class component extends Component{
                 pageSize:'',//每页长度
                 page:'',//当前页
                 type:'',//环卫车类型查询
+                companyName:'',//物业公司
+                userName:'',//操作人名字
             },
             // 省市区查询
             address:{
@@ -65,50 +78,41 @@ class component extends Component{
                     }
                 },
                 head:[
-                    { title: '当时收运垃圾高度', dataIndex: 'altitude', key: 'altitude'}, 
-                    { title: '收运车车牌号', dataIndex: 'carNumber', key: 'carNumber'}, 
-                    { title: '省', dataIndex: 'pro', key: 'pro'}, 
-                    { title: '市', dataIndex: 'city', key: 'city'}, 
-                    { title: '区', dataIndex: 'area', key: 'area'},
-                    { title: '创建时间', dataIndex: 'creationTime', key: 'creationTime'},
-                    { title: '司机名字', dataIndex: 'driverName', key: 'driverName'},
-                    { title: '收运记录id', dataIndex: 'id', key: 'id'},
-                    { title: '经度', dataIndex: 'lon', key: 'lon'},
-                    { title: '纬度', dataIndex: 'lat', key: 'lat'},
-                    { title: '小区名', dataIndex: 'plotName', key: 'plotName'},
-                    { title: '当时温度', dataIndex: 'temperature', key: 'temperature'},
-                    { title: '重量', dataIndex: 'weight', key: 'weight'},
-                    { title: '操作者用户名字', dataIndex: 'userName', key: 'userName'},
-                    { title: '操作人ID', dataIndex: 'userId', key: 'userId'},
+                    { title: 'ID', dataIndex: 'id', key: 'id'}, 
+                    { title: '车牌号码', dataIndex: 'carNumber', key: 'carNumber'}, 
                     { title: '环卫车类型', dataIndex: 'type', key: 'type', render:(text)=>(
                         ['全部','餐厨垃圾环卫车','其它垃圾环卫车'][text] || '全部'
                     )},
-                    // { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
-                    //     <span>
-                    //         <a href="javascript:;" onClick={()=>{
-                    //            Modal.confirm({
-                    //                 title:'提示',
-                    //                 content:'你确定要删除该角色吗？',
-                    //                 okText:'确定',
-                    //                 cancelText:'取消',
-                    //                 onOk(){
-                    //                     Ajax.post({
-                    //                         url:config.RoleAdmin.urls.delete,
-                    //                         params:{
-                    //                             carId:record.id
-                    //                         },
-                    //                         success:(data)=>{
-                    //                             _this.initIndex();
-                    //                         }
-                    //                     })
-                    //                 }
-                    //             })
-                    //         }}>删除</a>
-                    //         <Divider type="vertical" />
-                            
-                    //     </span>
-                    // )},
-
+                    { title: '省', dataIndex: 'pro', key: 'pro'}, 
+                    { title: '市', dataIndex: 'city', key: 'city'}, 
+                    { title: '区', dataIndex: 'area', key: 'area'},
+                    { title: '街道', dataIndex: 'street', key: 'street'},
+                    { title: '更多信息', dataIndex: 'more', key: 'more',render:(text,record)=>(
+                        <a href="javascript:;" onClick={()=>{
+                            Modal.info({
+                                title: '更多信息',
+                                content: (
+                                  <div>
+                                    <Form.Item {...formItemLayout} label='小区'>
+                                        {record.plotName||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='物业公司'>
+                                        {record.companyName||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='操作人'>
+                                        {record.userName||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='垃圾重量'>
+                                        {record.weight||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='收运时间'>
+                                        {record.creationTime||'--'}
+                                    </Form.Item>
+                                  </div>
+                                ),
+                            });
+                        }}>点击查看</a>
+                    )}, 
                 ],
                 data:[]
             },
@@ -189,79 +193,32 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                driverName:{
-                                    $set:e.target.value
-                                }    
-                            }
-                        }))
-                    }} value={state.toolbarParams.driverName} 
-                    placeholder="请输入司机名"
-                    addonBefore={<span>司机名</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
-                    <Input onChange={(e)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
-                                plotName:{
-                                    $set:e.target.value
-                                }    
-                            }
-                        }))
-                    }} value={state.toolbarParams.plotName} 
-                    placeholder="请输入小区名"
-                    addonBefore={<span>小区名</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
-                    <Input onChange={(e)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
                                 carNumber:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
                     }} value={state.toolbarParams.carNumber} 
-                    placeholder="请输入收运费车牌号"
-                    addonBefore={<span>收运费车牌号</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
-                    <Input onChange={(e)=>{
+                    placeholder="请输入车牌号"
+                    addonBefore={<span>车牌号</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }}/>
+
+                    环卫车类型：
+                    <Select value={state.toolbarParams.type} style={{ width: 200, marginRight:10 }} onChange={(value)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                userId:{
-                                    $set:e.target.value
-                                }    
+                                type:{
+                                    $set:value    
+                                }
                             }
                         }))
-                    }} value={state.toolbarParams.userId} 
-                    placeholder="请输入操作人id"
-                    addonBefore={<span>操作人ID</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
+                    }}>
+                        <Select.Option value="">全部</Select.Option>
+                        <Select.Option value="1">餐厨垃圾环卫车</Select.Option>
+                        <Select.Option value="2">其他垃圾环卫车</Select.Option>
+                    </Select>
                 </div>
-                <div className="main-toolbar">
-                    时间段查询：
-                    <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
-                                startTime:{
-                                    $set:dateString[0]
-                                },
-                                endTime:{
-                                    $set:dateString[1]
-                                }    
-                            }
-                        }))
-                    }} />
-                </div>
+
                 <div className="main-toolbar">
                     详细地址：
                     <Select value={state.toolbarParams.pro} style={{ width: 120, marginRight:10 }}>
@@ -359,21 +316,63 @@ class component extends Component{
                     
                 </div>
                 <div className="main-toolbar">
-                    环卫车类型：
-                    <Select value={state.toolbarParams.type} style={{ width: 120, marginRight:10 }} onChange={(value)=>{
+                    <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                type:{
-                                    $set:value    
-                                }
+                                plotName:{
+                                    $set:e.target.value
+                                }    
                             }
                         }))
-                    }}>
-                        <Select.Option value="">全部</Select.Option>
-                        <Select.Option value="1">餐厨垃圾环卫车</Select.Option>
-                        <Select.Option value="2">其他垃圾环卫车</Select.Option>
-                    </Select>
+                    }} value={state.toolbarParams.plotName} 
+                    placeholder="请输入小区名"
+                    addonBefore={<span>小区名</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }}/>
+
+
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                companyName:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.companyName} 
+                    placeholder="请输入物业公司名"
+                    addonBefore={<span>物业公司</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }}/>
+
                     
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                userName:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.userName} 
+                    placeholder="请输入操作人姓名"
+                    addonBefore={<span>操作人</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }}/>
+                </div>
+                <div className="main-toolbar">
+                    时间段查询：
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    startTime:{
+                                        $set:dateString[0]
+                                    },
+                                    endTime:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
                 </div>
                 <div className="main-toolbar">
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
@@ -392,6 +391,8 @@ class component extends Component{
                             pageSize:'',//每页长度
                             page:'',//当前页
                             type:'',//环卫车类型查询
+                            companyName:'',//物业公司
+                            userName:'',//操作人姓名
                         }
                         _this.initIndex({
                             toolbarParams:{
@@ -409,12 +410,17 @@ class component extends Component{
                                 pageSize:{$set:''},//每页长度
                                 page:{$set:''},//当前页
                                 type:{$set:''},//环卫车类型查询
+                                companyName:{$set:''},//物业公司
+                                userName:{$set:''},//操作人姓名
                             }
                         })
                     }}>重置</Button>
-                    <Button type="primary" onClick={()=>{
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
+                    <Button type="primary" onClick={()=>{
+                        window.open(config.CollectorLog.urls.exportCollectorLogExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                    }}>数据导出</Button>
                 </div>
                 
                 <Table rowKey={record=>record.id} pagination={state.indexTable.pagination} 

@@ -8,18 +8,30 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, formatSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
+import BMap  from 'BMap';
+const BMAP_NORMAL_MAP =window.BMAP_NORMAL_MAP;
+const BMAP_HYBRID_MAP = window.BMAP_HYBRID_MAP;
 
 const { RangePicker } = DatePicker;
-
 
 class component extends Component{
     constructor(props){
         super(props)
         const _this = this;
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 7 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 15 },
+          },
+        };
         this.update = update.bind(this);
         this.state = {
             // 表格数据
@@ -34,17 +46,115 @@ class component extends Component{
                     }
                 },
                 head:[
-                    { title: '车名', dataIndex: 'carName', key: 'carName'}, 
-                    // { title: '司机名', dataIndex: 'driverName', key: 'driverName'}, 
+                    { title: 'ID', dataIndex: 'id', key: 'id'}, 
                     { title: '车牌号', dataIndex: 'carNumber', key: 'carNumber'}, 
                     { title: 'imei号', dataIndex: 'imei', key: 'imei'}, 
                     { title: '环卫车类型', dataIndex: 'type', key: 'type'}, 
-                    { title: '身份', dataIndex: 'pro', key: 'pro'}, 
-                    { title: '市', dataIndex: 'city', key: 'city'}, 
-                    { title: '区', dataIndex: 'area', key: 'area'}, 
                     { title: '是否在工作中', dataIndex: 'isWord', key: 'isWord', render:(text)=>(
                         ['','是','否'][text]
                     )},
+                    { title: '是否行驶中', dataIndex: 'isAuto', key: 'isAuto', render:(text)=>(
+                        ['','是','否'][text]
+                    )},
+                    { title: 'GPS是否在线', dataIndex: 'gps', key: 'gps', render:(text)=>(
+                        ['','是','否'][text]
+                    )},
+                    { title: '环卫车状态', dataIndex: 'morestatus', key: 'morestatus', render:(text,record)=>(
+                        <a href="javascript:;" onClick={()=>{
+                            Ajax.get({
+                                url:config.SanitationCarAdmin.urls.details,
+                                params:{
+                                    id:record.id
+                                },
+                                success:(data)=>{
+                                    this.update('set',addons(this.state,{
+                                        Modal:{
+                                            visBmap:{
+                                                $set:true
+                                            }
+                                        },
+                                    }));
+                                    let map = new BMap.Map("allmap");
+                                    let point = new BMap.Point(data.lon, data.lat);
+                                    map.centerAndZoom(point, 12);  // 初始化地图,设置中心点坐标和地图级别
+                                    let gc = new BMap.Geocoder();
+
+                                    let marker = new BMap.Marker(point);  // 创建标注
+                                    map.addOverlay(marker);
+
+                                    
+                                    gc.getLocation(point, function (rs) {
+                                        var addComp = rs.addressComponents;
+                                        
+                                        let label = new BMap.Label(`
+                                            <div>
+                                                <p>车牌号：${data.carNumber}</p>
+                                                <p>车类型：${data.type||''}</p>
+                                                <p>所属单位：${data.companyName}</p>
+                                                <p>今日收集垃圾量：${data.sumWeight||''}</p>
+                                                <p>实时位置：${addComp.street}</p>
+                                                <p>实时速度：${data.speed}</p>
+                                                <p>时间：：${data.time}</p>
+                                            </div>
+                                        `,{offset:new BMap.Size(20,-10)});
+                                        label.setStyle({
+                                            padding:'10px 5px',
+                                            marginTop:'-130px',
+                                            backgroundColor: 'rgba(0,255,60,0.7)',
+                                        })
+                                        marker.setLabel(label);
+                                    });
+                                    
+
+                                    //添加地图类型控件
+                                    // map.addControl(new BMap.MapTypeControl({
+                                    //     mapTypes:[
+                                    //         BMAP_HYBRID_MAP,//混合地图
+                                    //         BMAP_NORMAL_MAP//地图
+                                    //     ]
+                                    // }));
+
+                                    //map.setCurrentCity("北京");           设置地图显示的城市 此项是必须设置的
+                                    //map.enableScrollWheelZoom(true);     开启鼠标滚轮缩放
+
+
+
+                                }
+                            })
+                        }}>点击查看</a>
+                    )},
+                    { title: '更多信息', dataIndex: 'more', key: 'more', render:(text,record)=>(
+                        <a href="javascript:;" onClick={()=>{
+                            Modal.info({
+                                title: '更多信息',
+                                content: (
+                                  <div>
+                                    <Form.Item {...formItemLayout} label='省'>
+                                        {record.pro||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='市'>
+                                        {record.city||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='区'>
+                                        {record.area||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='街道'>
+                                        {record.street||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='所属单位'>
+                                        {record.companyName||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='车辆管理员'>
+                                        {record.adminRole||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='联系电话'>
+                                        {record.tel||'--'}
+                                    </Form.Item>
+                                  </div>
+                                ),
+                            });
+                        }}>点击查看</a>
+                    ) }, 
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
                             <a href="javascript:;" onClick={()=>{
@@ -61,6 +171,12 @@ class component extends Component{
                                         $set:record
                                     },
                                     newRecord:{
+                                        adminRole:{
+                                            $set:record.adminRole
+                                        },
+                                        tel:{
+                                            $set:record.tel
+                                        },
                                         carName:{
                                             $set:record.carName
                                         },
@@ -133,10 +249,14 @@ class component extends Component{
                 imei:'',
                 pro:'',
                 city:'',
-                area:''
+                area:'',
+                type:'',
+                adminRole:'',
+                tel:''
             },
             Modal:{
-                visRecord:false
+                visRecord:false,
+                visBmap:false
             },
             recordType:'add',
             record:{},
@@ -154,6 +274,7 @@ class component extends Component{
         }
     }
     componentDidMount(){
+        
 
         this.initIndex()
         // console.log(Cities)
@@ -196,7 +317,10 @@ class component extends Component{
                     imei:params.imei||'',
                     pro:params.pro||'',
                     city:params.city||'',
-                    area:params.area||''
+                    area:params.area||'',
+                    tel:params.tel||'',
+                    adminRole:params.adminRole||'',
+                    type:params.type||'',
                 },
                 success:(data)=>{
                     _this.update('set',addons(_this.state,{
@@ -266,6 +390,7 @@ class component extends Component{
         };
         return (
             <div className="content">
+                
                 <Breadcrumb>
                     <Breadcrumb.Item>环卫车管理</Breadcrumb.Item>
                     <Breadcrumb.Item><a href="javascript:;">环卫车列表</a></Breadcrumb.Item>
@@ -314,37 +439,7 @@ class component extends Component{
                     }}>添加环卫车</Button>
                 </div>
                 <div className="main-toolbar">
-                    <Input onChange={(e)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
-                                carName:{
-                                    $set:e.target.value
-                                }    
-                            }
-                        }))
-                    }} value={state.toolbarParams.carName} 
-                    placeholder="请输入车名"
-                    addonBefore={<span>车名</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
-
-                    {/*<Input onChange={(e)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
-                                driverName:{
-                                    $set:e.target.value
-                                }    
-                            }
-                        }))
-                    }} value={state.toolbarParams.driverName} 
-                    addonBefore={<span>司机名</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>*/}
-
+                    
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
@@ -356,10 +451,8 @@ class component extends Component{
                     }} value={state.toolbarParams.carNumber} 
                     placeholder="请输入车牌号"
                     addonBefore={<span>车牌号</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }} />
+
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
@@ -369,12 +462,52 @@ class component extends Component{
                             }
                         }))
                     }} value={state.toolbarParams.imei} 
-                    placeholder="请输入emei号"
-                    addonBefore={<span>imei号</span>} 
-                    style={{ width: 300, marginRight: 10, marginBottom:10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
+                    placeholder="请输入IMEI号"
+                    addonBefore={<span>IMEI号</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }} />
+
+                    环卫车类型：<Select value={state.toolbarParams.type} onChange={(value)=>{
+                         update('set',addons(state,{
+                            toolbarParams:{
+                                type:{$set:value}
+                            }
+                         }))
+                    }} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>
+                        <Select.Option value="0">普通用户</Select.Option>
+                        <Select.Option value="1">保洁员</Select.Option>
+                        <Select.Option value="2">物业公司工作人员</Select.Option>
+                        <Select.Option value="3">街道人员</Select.Option>
+                        <Select.Option value="4">城管局</Select.Option>
+                        <Select.Option value="5">司机</Select.Option>
+                        <Select.Option value="6">公司人员</Select.Option>
+                    </Select>
+                </div>
+                <div className="main-toolbar">
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                adminRole:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.adminRole} 
+                    placeholder="请输入车辆管理员姓名"
+                    addonBefore={<span>车辆管理员</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }} />
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                tel:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.tel} 
+                    placeholder="请输入电话号码"
+                    addonBefore={<span>联系电话</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }} />
                 </div>
                 <div className="main-toolbar">
                     详细地址：
@@ -483,7 +616,10 @@ class component extends Component{
                             imei:'',
                             pro:'',
                             city:'',
-                            area:''
+                            area:'',
+                            type:'',
+                            adminRole:'',
+                            tel:''
                         }
                         _this.initIndex({
                             toolbarParams:{
@@ -495,13 +631,20 @@ class component extends Component{
                                 pro:{$set:''},//省
                                 city:{$set:''},//市
                                 area:{$set:''},//市
+                                type:{$set:''},//环卫车类型
+                                adminRole:{$set:''},//环卫车类型
+                                tel:{$set:''},//环卫车类型
                             }
                         })
                     }}>重置</Button>
 
-                    <Button type="primary" onClick={()=>{
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
+
+                    <Button type="primary" onClick={()=>{
+                        window.open(config.SanitationCarAdmin.urls.sanitationCarExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                    }}>数据导出</Button>
                 </div>
                 <Modal title={state.recordType=='add'?'添加环卫车':'修改环卫车记录'}
                    onOk={()=>{
@@ -524,6 +667,8 @@ class component extends Component{
                                 // },
                                 carNumber:state.newRecord.carNumber,
                                 imei:state.newRecord.imei,
+                                adminRole:state.newRecord.adminRole,
+                                tel:state.newRecord.tel,
                                 type:state.newRecord.type,
                                 pro:state.newRecord.pro,
                                 city:state.newRecord.city,
@@ -562,6 +707,16 @@ class component extends Component{
                         <Input placeholder="请输入emei" onChange={(e)=>{
                             _this.updateNewRecord('imei',e.target.value);
                         }} value={state.newRecord.imei}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="车辆管理员" >
+                        <Input placeholder="请输入车辆管理员姓名" onChange={(e)=>{
+                            _this.updateNewRecord('adminRole',e.target.value);
+                        }} value={state.newRecord.adminRole}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="联系电话" >
+                        <Input placeholder="请输入联系电话" onChange={(e)=>{
+                            _this.updateNewRecord('tel',e.target.value);
+                        }} value={state.newRecord.tel}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="地址" >
                         <Select value={state.newRecord.pro} style={{ width: 120, marginRight:10 }}>
@@ -665,6 +820,19 @@ class component extends Component{
                           <Select.Option value="2">否</Select.Option>
                         </Select>
                     </Form.Item>
+                </Modal>
+                <Modal title="环卫车状态"
+                   onOk={()=>{
+                        
+                   }}
+                   width={600}
+                   onCancel={()=>{
+                    update('set',addons(state,{Modal:{visBmap:{$set:false}}}))
+                   }}
+                   okText="确认"
+                   cancelText="取消"
+                   visible={state.Modal.visBmap}>
+                    <div style={{height:"400px"}} id={"allmap"}></div>
                 </Modal>
                 <Table rowKey={record=>record.id} pagination={state.indexTable.pagination} 
                     columns={state.indexTable.head} dataSource={state.indexTable.data} />

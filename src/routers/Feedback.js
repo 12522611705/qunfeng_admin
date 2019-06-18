@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, Modal, Tree } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree, Carousel } from 'antd';
 import moment from 'moment';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -40,12 +41,8 @@ class component extends Component{
                 },
                 head:[
                     { title: 'ID', dataIndex: 'id', key: 'id' }, 
-                    { title: '用户来源', dataIndex: 'source', key: 'source', render:(text,record)=>(
-                        ['','H5','安卓','IOS'][text]
-                    ) }, 
                     { title: '反馈内容', dataIndex: 'content', key: 'content' }, 
-                    { title: '用户ID', dataIndex: 'userId', key: 'userId' }, 
-                    { title: '意见反馈图片', dataIndex: 'imgUrls', key: 'imgUrls' ,render:(text,record)=>(
+                    { title: '图片', dataIndex: 'imgUrls', key: 'imgUrls' ,render:(text,record)=>(
                         <a href="javascript:;" onClick={()=>{
                             _this.update('set',addons(_this.state,{
                                 record:{$set:record},
@@ -53,10 +50,26 @@ class component extends Component{
                                     visThumb:{$set:true}
                                 }
                             }))
-                        }}>查看</a>
+                        }}>查看图片</a>
                     ) }, 
-                    { title: '开始时间', dataIndex: 'creationTime', key: 'creationTime' }, 
-                    { title: '手机号码', dataIndex: 'tel', key: 'tel' }
+                    { title: '来源', dataIndex: 'source', key: 'source', render:(text,record)=>(
+                        ['','H5','安卓','IOS'][text]
+                    ) }, 
+                    { title: '反馈时间', dataIndex: 'creationTime', key: 'creationTime' }, 
+                    { title: '用户ID', dataIndex: 'userId', key: 'userId' }, 
+                    { title: '电话号码', dataIndex: 'tel', key: 'tel' },
+
+                    { title: '用户类别', dataIndex: 'type', key: 'type',render:(text)=>(
+                        ['普通用户','保洁员','物业公司工作人员','街道人员','城管局','司机','公司员工'][text]
+                    ) },
+                    { title: '处理意见', dataIndex: 'disposeIdea', key: 'disposeIdea' },
+                    { title: '处理结果', dataIndex: 'state', key: 'state' ,render:(text)=>(
+                        ['','已完成','未完成'][text]
+                    ) },
+                    { title: '处理时间', dataIndex: 'disposeTime', key: 'disposeTime' },
+                    { title: '跟进人', dataIndex: 'followUpPeople', key: 'followUpPeople' },
+                    { title: '备注', dataIndex: 'remark', key: 'remark' },
+
                 ],
                 data:[]
             },
@@ -64,6 +77,9 @@ class component extends Component{
                 tel:'',
                 startTime:'',
                 endTime:'',
+                name:'',
+                state:'',
+                type:'',
                 source:''
             }
         }
@@ -91,6 +107,9 @@ class component extends Component{
                 tel:params.tel||'',
                 startTime:new Date(params.createTimeStart).getTime()||'',
                 endTime:new Date(params.createTimeEnd).getTime()||'',
+                name:params.name||'',
+                state:params.state||'',
+                type:params.type||'',
                 source:params.source||''
             },
             success:(data)=>{
@@ -130,22 +149,32 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
+                                name:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.name} 
+                    placeholder="请输入用户名"
+                    addonBefore={<span>用户名</span>} 
+                    style={{ width: 300, marginRight: 10 }} />
+
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
                                 tel:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
                     }} value={state.toolbarParams.tel} 
-                    placeholder="请输入手机号码"
-                    addonBefore={<span>手机号码</span>} 
-                    style={{ width: 300, marginRight: 10 }} 
-                    addonAfter={<a onClick={()=>{
-                        _this.initIndex();
-                    }} href="javascript:;"><Icon type="search" /></a>}/>
+                    placeholder="请输入电话号码"
+                    addonBefore={<span>电话号码</span>} 
+                    style={{ width: 300, marginRight: 10 }} />
                     
                 </div>
                 <div className="main-toolbar">
-                    状态：<Select value={state.toolbarParams.source} onChange={(value)=>{
+                    用户来源：<Select value={state.toolbarParams.source} onChange={(value)=>{
                          update('set',addons(state,{
                             toolbarParams:{
                                 source:{$set:value}
@@ -157,19 +186,52 @@ class component extends Component{
                         <Select.Option value="2">安卓</Select.Option>
                         <Select.Option value="3">IOS</Select.Option>
                     </Select>
-                    时间段查询：
-                    <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
-                        update('set',addons(state,{
+                    用户类别：<Select value={state.toolbarParams.type} onChange={(value)=>{
+                         update('set',addons(state,{
                             toolbarParams:{
-                                createTimeStart:{
-                                    $set:dateString[0]
-                                },
-                                createTimeEnd:{
-                                    $set:dateString[1]
-                                }    
+                                type:{$set:value}
                             }
-                        }))
-                    }} />
+                         }))
+                    }} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>
+                        <Select.Option value="0">普通用户</Select.Option>
+                        <Select.Option value="1">保洁员</Select.Option>
+                        <Select.Option value="2">物业公司工作人员</Select.Option>
+                        <Select.Option value="3">街道人员</Select.Option>
+                        <Select.Option value="4">城管局</Select.Option>
+                        <Select.Option value="5">司机</Select.Option>
+                        <Select.Option value="6">公司人员</Select.Option>
+                    </Select>
+                </div>
+                <div className="main-toolbar">
+                    反馈时间：
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} 
+                        style={{marginRight:10}}
+                        onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    createTimeStart:{
+                                        $set:dateString[0]
+                                    },
+                                    createTimeEnd:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
+                    处理结果：<Select value={state.toolbarParams.state} onChange={(value)=>{
+                         update('set',addons(state,{
+                            toolbarParams:{
+                                state:{$set:value}
+                            }
+                         }))
+                    }} style={{ width: 120, marginRight:10 }}>
+                        <Select.Option value="">全部</Select.Option>
+                        <Select.Option value="1">已完成</Select.Option>
+                        <Select.Option value="2">未完成</Select.Option>
+                    </Select>
                 </div>
                 <div style={{textAlign:"right"}} className="main-toolbar">
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
@@ -177,6 +239,9 @@ class component extends Component{
                             tel:'',
                             startTime:'',
                             endTime:'',
+                            name:'',
+                            state:'',
+                            type:'',
                             source:''
                         }
                         _this.initIndex({
@@ -184,6 +249,9 @@ class component extends Component{
                                 tel:{$set:''},
                                 startTime:{$set:''},
                                 endTime:{$set:''},
+                                name:{$set:''},
+                                state:{$set:''},
+                                type:{$set:''},
                                 source:{$set:''},
                             }
                         })
@@ -209,11 +277,21 @@ class component extends Component{
                         }))
                     }}
                     visible={state.Modal.visThumb}>
-                    {
-                        state.record.imgUrls && state.record.imgUrls.map((el,index)=>(
-                            <div style={{paddingBottom:10}}><img style={{width:'100%'}} src={el.imgPath} key={index}/></div>
-                        ))
-                    }
+                    <div style={{position:"relative"}}>
+                        <Icon onClick={()=>{
+                            _this.refs.carousel.prev();
+                        }} style={{fontSize:40,cursor:"pointer",position:'absolute',top:'50%',left:0,zIndex:11}} type="left-circle" />
+                        <Carousel ref="carousel">
+                            {
+                                state.record.imgUrls && state.record.imgUrls.map((el,index)=>(
+                                    <div key={index} style={{paddingBottom:10}}><img style={{width:'100%'}} src={el.imgPath}/></div>
+                                ))
+                            }
+                        </Carousel>
+                        <Icon onClick={()=>{
+                            _this.refs.carousel.next();
+                        }} style={{fontSize:40,cursor:"pointer",position:'absolute',top:'50%',right:0,zIndex:11}} type="right-circle" />
+                    </div>
                 </Modal>
             </div>
         );

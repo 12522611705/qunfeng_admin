@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, Tree, message } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree, message } from 'antd';
 import moment from 'moment';
+import zh_CN from 'antd/lib/locale-provider/zh_CN';
+
 // router
 // import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
@@ -289,18 +291,22 @@ class component extends Component{
                         <Select.Option value="15">P</Select.Option>    
                     </Select>
                     创建时间搜索：
-                    <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
-                                createTimeStart:{
-                                    $set:dateString[0]
-                                },
-                                createTimeEnd:{
-                                    $set:dateString[1]
-                                }    
-                            }
-                        }))
-                    }} />
+                    <LocaleProvider locale={zh_CN}>
+                        <RangePicker value={state.toolbarParams.createTimeStart ? [moment(state.toolbarParams.createTimeStart, 'YYYY/MM/DD'),moment(state.toolbarParams.createTimeEnd, 'YYYY/MM/DD')] : []} 
+                        style={{marginRight:10}}
+                        onChange={(date,dateString)=>{
+                            update('set',addons(state,{
+                                toolbarParams:{
+                                    createTimeStart:{
+                                        $set:dateString[0]
+                                    },
+                                    createTimeEnd:{
+                                        $set:dateString[1]
+                                    }    
+                                }
+                            }))
+                        }} />
+                    </LocaleProvider>
                     工作状态：<Select value={state.toolbarParams.isWork} onChange={(value)=>{
                     	update('set',addons(state,{
                             toolbarParams:{
