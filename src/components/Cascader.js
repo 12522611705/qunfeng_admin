@@ -53,6 +53,7 @@ class component extends Component{
         })
         this.setState({});
     }
+    
     componentWillUnmount() {
 
     }

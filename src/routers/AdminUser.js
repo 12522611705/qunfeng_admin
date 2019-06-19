@@ -8,13 +8,13 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, parseTree } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
 
 const { RangePicker } = DatePicker;
-
+const { TreeNode } = Tree;
 
 class component extends Component{
     constructor(props){
@@ -24,6 +24,7 @@ class component extends Component{
         this.state = {
             Modal:{
                visAddUser:false,
+               visAreaList:false,
                visChangePass:false,
                visRoleList:false
             },
@@ -46,27 +47,7 @@ class component extends Component{
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
                             <a href="javascript:;" onClick={()=>{
-                               Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要删除该角色吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.UserAdmin.urls.deleteUser,
-                                            params:{
-                                                id:record.id
-                                            },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>删除</a>
-                            <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                               Ajax.get({
+                                Ajax.get({
                                     url:config.RoleAdmin.urls.roleListByUserId,
                                     params:{
                                         userId:record.id
@@ -88,6 +69,25 @@ class component extends Component{
                                 })
                             }}>绑定角色</a>
                             <Divider type="vertical" />
+                            <a href="javascript:;" onClick={()=>{   
+                                Ajax.get({
+                                    url:config.Addres.urls.list,
+                                    params:{
+                                        userId:record.id
+                                    },
+                                    success:(data)=>{
+                                        _this.update('set',addons(_this.state,{
+                                            Modal:{visAreaList:{$set:true}},
+                                            record:{$set:record},
+                                            areaTreeData:{$set:data},
+                                            area:{
+                                                value:{$set:record.codes}
+                                            }
+                                        }))
+                                    }
+                                })
+                            }}>绑定区域</a>
+                            <Divider type="vertical" />
                             <a href="javascript:;" onClick={()=>{
                                 _this.update('set',addons(_this.state,{
                                     Modal:{visChangePass:{$set:true}},
@@ -98,6 +98,26 @@ class component extends Component{
                                     }
                                 }))
                             }}>修改密码</a>
+                            <Divider type="vertical" />
+                            <a href="javascript:;" onClick={()=>{
+                               Modal.confirm({
+                                    title:'提示',
+                                    content:'你确定要删除该角色吗？',
+                                    okText:'确定',
+                                    cancelText:'取消',
+                                    onOk(){
+                                        Ajax.post({
+                                            url:config.UserAdmin.urls.deleteUser,
+                                            params:{
+                                                id:record.id
+                                            },
+                                            success:(data)=>{
+                                                _this.initIndex();
+                                            }
+                                        })
+                                    }
+                                })
+                            }}>删除</a>
                         </span>
                     )},
 
@@ -113,7 +133,12 @@ class component extends Component{
                 password2:''
             },
             roleList:[],
-            roleIds:[]
+            roleIds:[],
+            areaTreeData:[],
+            area:{
+                address:[],
+                value:[]
+            }
         }
     }
     componentDidMount(){
@@ -156,6 +181,39 @@ class component extends Component{
                 }))
             }
         })
+    }
+    // 渲染树节点
+    renderTreeNodes(data){
+        return data.map(item => {
+            if (item.children) {
+                return (
+                    <TreeNode  
+                        title={['',item.provinceName,item.cityName,item.areaName,item.street][item.type]} 
+                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode][item.type]} 
+                        dataRef={item}>
+                        {this.renderTreeNodes(item.children)}
+                    </TreeNode>
+                );
+            }
+            return <TreeNode 
+                        title={['',item.provinceName,item.cityName,item.areaName,item.street][item.type]} 
+                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode][item.type]}
+            {...item} />;
+        })
+    }
+    // 根据key查找节点给其插入节点的子节点数据
+    insertChildrenToTree(key,children){
+        const fn = (data)=>{
+            for(let i=0;i<data.length;i++){
+                let item = data[i];
+                if(['',item.provinceCode,item.cityCode,item.areaCode,item.areaCode][item.type] == key){
+                    item.children = children;
+                    return;
+                }
+                if(item.children) fn(item.children);
+            }
+        }
+        fn(this.state.areaTreeData);
     }
     render(){
         const _this = this;
@@ -287,6 +345,64 @@ class component extends Component{
                             ))
                         }
                     </Checkbox.Group>
+                </Modal>
+                <Modal 
+                    title="区域绑定" 
+                    okText="确定"
+                    cancelText="取消"
+                    onOk={()=>{
+                        Ajax.post({
+                            url:config.Addres.urls.addAddresToAdminUser,
+                            params:{
+                                userId:state.record.id,
+                                addres:state.area.address
+                            },
+                            success:(data)=>{
+                                _this.initIndex({Modal:{visAreaList:{$set:false}}})
+                            }
+                        })
+                    }}
+                    onCancel={()=>{
+                        update('set',addons(state,{Modal:{visAreaList:{$set:false}}}))
+                    }}
+                    visible={state.Modal.visAreaList}>
+                    <Tree showLine checkable 
+                        checkedKeys={state.area.value}
+                        onSelect={(selectedKeys,info)=>{
+                            if(info.node.props.type==3){
+                                Ajax.get({
+                                    url:config.Addres.urls.streetList,
+                                    params:{
+                                        areaCode:selectedKeys[0]
+                                    },
+                                    success:(data)=>{
+                                        _this.insertChildrenToTree(selectedKeys[0], data);
+                                        update('set',addons(state,{}));
+                                    }
+                                })
+                            }
+                        }}
+                        onCheck={(checkedKeys,info)=>{
+                            let address=[];
+                            info.checkedNodes.forEach((item)=>{
+                                const type = item.props.type || item.props.dataRef.type;
+                                const code = item.key;
+                                const ids = item.props.dataRef ? ['',item.props.dataRef.provinceId,item.props.dataRef.cityId,item.props.dataRef.areaId,item.props.dataRef.streetId] : ['',item.props.provinceId,item.props.cityId,item.props.areaId,item.props.streetId];
+                                address.push({
+                                    type:type,
+                                    code:code,
+                                    id:ids[type]
+                                })
+                            })
+                            update('set',addons(state,{
+                                area:{
+                                    value:{$set:checkedKeys},
+                                    address:{$set:address}
+                                }
+                            }))
+                        }}>
+                        {_this.renderTreeNodes(state.areaTreeData)}
+                    </Tree>
                 </Modal>
             </div>
         );

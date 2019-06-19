@@ -104,6 +104,17 @@ export const config = {
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/list',
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/update'
 		}
+	},
+	// 区域管理
+	Addres:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/list',
+			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/delete',
+			addAddresToAdminUser:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/addAddresToAdminUser',
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/add',
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/update',
+			streetList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/streetList'
+
+		}
 	}
-	
 }

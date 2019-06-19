@@ -9,6 +9,12 @@ const responseStatus = {
 	'500': 500 		// ['Internal Server Error'] 服务器遇到了一个未曾预料的状况，导致了它无法完成对请求的处理。
 }
 
+export const parseTree = (data)=>{
+    let tree = [];
+    console.log(data)
+    return tree;
+}
+
 /**
  * @desc   格式化url？后面的参数为Object格式
  * @date   2019-03-21

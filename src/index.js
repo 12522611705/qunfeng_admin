@@ -26,6 +26,8 @@ import Feedback from './routers/Feedback';
 
 // 欢迎登录
 import Welcome from './routers/Welcome';
+// 区域管理
+import Addres from './routers/Addres';
 
 
 ReactDOM.render((
@@ -44,6 +46,7 @@ ReactDOM.render((
 				<Route path="/Card"							component={Card}/>
 				<Route path="/Feedback"						component={Feedback}/>
 				<Route path="/Welcome"						component={Welcome}/>
+				<Route path="/Addres"						component={Addres}/>
 	
 
 			</App>
