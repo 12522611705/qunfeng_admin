@@ -10,7 +10,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax, formatSearch } from '../utils/global';
+import { Ajax, formatSearch, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 
 
@@ -114,12 +114,32 @@ class component extends Component{
     }
     componentDidMount(){
         this.initIndex();
+        this.initPermission();
     }
     componentWillUnmount() {
 
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    // _this.state.permission[config.Card.permission[el.url]] = true;
+                })
+                console.log(_this.state.permission)
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化页面数据

@@ -10,7 +10,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
@@ -24,6 +24,10 @@ class component extends Component{
         const _this = this;
         this.update = update.bind(this);
         this.state = {
+            permission:{
+                list:false,
+                update:false
+            },
             Modal:{
                visUpdate:false,
                visThumb:false
@@ -83,6 +87,7 @@ class component extends Component{
                         }}/>
                     )},
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
+                        _this.state.permission.update?
                         <span>
                             <a style={{color:record.state==3 || record.state==4 ? '#ccc' : '#1890ff'}} href="javascript:;" onClick={()=>{
                                 if(record.state == 3 || record.state == 4 ) return;
@@ -111,7 +116,8 @@ class component extends Component{
                                     }
                                 })
                             }}>不通过</a>
-                        </span>
+                        </span>:'--'
+                        
                     )},
                 ],
                 data:[]
@@ -138,12 +144,33 @@ class component extends Component{
     }
     componentDidMount(){
         this.initIndex()
+        this.initPermission();
     }
     componentWillUnmount() {
 
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    _this.state.permission[config.Card.permission[el.url]] = true;
+                })
+                console.log(_this.state.permission)
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化页面数据

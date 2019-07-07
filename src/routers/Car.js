@@ -8,7 +8,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax, formatSearch } from '../utils/global';
+import { Ajax, formatSearch, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 
 // 组件
@@ -37,6 +37,13 @@ class component extends Component{
         };
         this.update = update.bind(this);
         this.state = {
+            permission:{
+                delete:false,
+                add:false,
+                update:false,
+                list:false,
+                details:false
+            },
             // 表格数据
             indexTable:{
                 pagination:{
@@ -62,175 +69,178 @@ class component extends Component{
                     { title: 'GPS是否在线', dataIndex: 'gps', key: 'gps', render:(text)=>(
                         ['','是','否'][text]
                     )},
-                    { title: '环卫车状态', dataIndex: 'morestatus', key: 'morestatus', render:(text,record)=>(
-                        <a href="javascript:;" onClick={()=>{
-                            Ajax.get({
-                                url:config.SanitationCarAdmin.urls.details,
-                                params:{
-                                    id:record.id
-                                },
-                                success:(data)=>{
+                    { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
+                        <span>
+                            {_this.state.permission.details?
+                            <a href="javascript:;" onClick={()=>{
+                                Ajax.get({
+                                    url:config.SanitationCarAdmin.urls.details,
+                                    params:{
+                                        id:record.id
+                                    },
+                                    success:(data)=>{
+                                        this.update('set',addons(this.state,{
+                                            Modal:{
+                                                visBmap:{
+                                                    $set:true
+                                                }
+                                            },
+                                        }));
+                                        let map = new BMap.Map("allmap");
+                                        let point = new BMap.Point(data.lon, data.lat);
+                                        map.centerAndZoom(point, 12);  // 初始化地图,设置中心点坐标和地图级别
+                                        let gc = new BMap.Geocoder();
+
+                                        let marker = new BMap.Marker(point);  // 创建标注
+                                        map.addOverlay(marker);
+
+                                        
+                                        gc.getLocation(point, function (rs) {
+                                            var addComp = rs.addressComponents;
+                                            
+                                            let label = new BMap.Label(`
+                                                <div>
+                                                    <p>车牌号：${data.carNumber}</p>
+                                                    <p>车类型：${data.type||''}</p>
+                                                    <p>所属单位：${data.companyName}</p>
+                                                    <p>今日收集垃圾量：${data.sumWeight||''}</p>
+                                                    <p>实时位置：${addComp.street}</p>
+                                                    <p>实时速度：${data.speed}</p>
+                                                    <p>时间：：${data.time}</p>
+                                                </div>
+                                            `,{offset:new BMap.Size(20,-10)});
+                                            label.setStyle({
+                                                padding:'10px 5px',
+                                                marginTop:'-130px',
+                                                backgroundColor: 'rgba(0,255,60,0.7)',
+                                            })
+                                            marker.setLabel(label);
+                                        });
+                                        
+
+                                        //添加地图类型控件
+                                        // map.addControl(new BMap.MapTypeControl({
+                                        //     mapTypes:[
+                                        //         BMAP_HYBRID_MAP,//混合地图
+                                        //         BMAP_NORMAL_MAP//地图
+                                        //     ]
+                                        // }));
+
+                                        //map.setCurrentCity("北京");           设置地图显示的城市 此项是必须设置的
+                                        //map.enableScrollWheelZoom(true);     开启鼠标滚轮缩放
+                                    }
+                                })
+                            }}>环卫车状态</a>:'--'}
+                            <Divider type="vertical" />
+                            <a href="javascript:;" onClick={()=>{
+                                Modal.info({
+                                    title: '更多信息',
+                                    content: (
+                                      <div>
+                                        <Form.Item {...formItemLayout} label='省'>
+                                            {record.pro||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='市'>
+                                            {record.city||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='区'>
+                                            {record.area||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='街道'>
+                                            {record.street||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='所属单位'>
+                                            {record.companyName||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='车辆管理员'>
+                                            {record.adminRole||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='联系电话'>
+                                            {record.tel||'--'}
+                                        </Form.Item>
+                                      </div>
+                                    ),
+                                });
+                            }}>查看更多</a>
+                            <Divider type="vertical" />
+                            {
+                                _this.state.permission.update ?
+                                <a href="javascript:;" onClick={()=>{
                                     this.update('set',addons(this.state,{
                                         Modal:{
-                                            visBmap:{
+                                            visRecord:{
                                                 $set:true
                                             }
                                         },
-                                    }));
-                                    let map = new BMap.Map("allmap");
-                                    let point = new BMap.Point(data.lon, data.lat);
-                                    map.centerAndZoom(point, 12);  // 初始化地图,设置中心点坐标和地图级别
-                                    let gc = new BMap.Geocoder();
-
-                                    let marker = new BMap.Marker(point);  // 创建标注
-                                    map.addOverlay(marker);
-
-                                    
-                                    gc.getLocation(point, function (rs) {
-                                        var addComp = rs.addressComponents;
-                                        
-                                        let label = new BMap.Label(`
-                                            <div>
-                                                <p>车牌号：${data.carNumber}</p>
-                                                <p>车类型：${data.type||''}</p>
-                                                <p>所属单位：${data.companyName}</p>
-                                                <p>今日收集垃圾量：${data.sumWeight||''}</p>
-                                                <p>实时位置：${addComp.street}</p>
-                                                <p>实时速度：${data.speed}</p>
-                                                <p>时间：：${data.time}</p>
-                                            </div>
-                                        `,{offset:new BMap.Size(20,-10)});
-                                        label.setStyle({
-                                            padding:'10px 5px',
-                                            marginTop:'-130px',
-                                            backgroundColor: 'rgba(0,255,60,0.7)',
-                                        })
-                                        marker.setLabel(label);
-                                    });
-                                    
-
-                                    //添加地图类型控件
-                                    // map.addControl(new BMap.MapTypeControl({
-                                    //     mapTypes:[
-                                    //         BMAP_HYBRID_MAP,//混合地图
-                                    //         BMAP_NORMAL_MAP//地图
-                                    //     ]
-                                    // }));
-
-                                    //map.setCurrentCity("北京");           设置地图显示的城市 此项是必须设置的
-                                    //map.enableScrollWheelZoom(true);     开启鼠标滚轮缩放
-
-
-
-                                }
-                            })
-                        }}>点击查看</a>
-                    )},
-                    { title: '更多信息', dataIndex: 'more', key: 'more', render:(text,record)=>(
-                        <a href="javascript:;" onClick={()=>{
-                            Modal.info({
-                                title: '更多信息',
-                                content: (
-                                  <div>
-                                    <Form.Item {...formItemLayout} label='省'>
-                                        {record.pro||'--'}
-                                    </Form.Item>
-                                    <Form.Item {...formItemLayout} label='市'>
-                                        {record.city||'--'}
-                                    </Form.Item>
-                                    <Form.Item {...formItemLayout} label='区'>
-                                        {record.area||'--'}
-                                    </Form.Item>
-                                    <Form.Item {...formItemLayout} label='街道'>
-                                        {record.street||'--'}
-                                    </Form.Item>
-                                    <Form.Item {...formItemLayout} label='所属单位'>
-                                        {record.companyName||'--'}
-                                    </Form.Item>
-                                    <Form.Item {...formItemLayout} label='车辆管理员'>
-                                        {record.adminRole||'--'}
-                                    </Form.Item>
-                                    <Form.Item {...formItemLayout} label='联系电话'>
-                                        {record.tel||'--'}
-                                    </Form.Item>
-                                  </div>
-                                ),
-                            });
-                        }}>点击查看</a>
-                    ) }, 
-                    { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
-                        <span>
-                            <a href="javascript:;" onClick={()=>{
-                                this.update('set',addons(this.state,{
-                                    Modal:{
-                                        visRecord:{
-                                            $set:true
-                                        }
-                                    },
-                                    recordType:{
-                                        $set:'update'
-                                    },
-                                    record:{
-                                        $set:record
-                                    },
-                                    newRecord:{
-                                        adminRole:{
-                                            $set:record.adminRole
+                                        recordType:{
+                                            $set:'update'
                                         },
-                                        tel:{
-                                            $set:record.tel
+                                        record:{
+                                            $set:record
                                         },
-                                        carName:{
-                                            $set:record.carName
-                                        },
-                                        // driverName:{
-                                        //     $set:record.driverName
-                                        // },
-                                        carNumber:{
-                                            $set:record.carNumber
-                                        },
-                                        imei:{
-                                            $set:record.imei
-                                        },
-                                        type:{
-                                            $set:record.type
-                                        },
-                                        pro:{
-                                            $set:record.pro
-                                        },
-                                        city:{
-                                            $set:record.city
-                                        },
-                                        area:{
-                                            $set:record.area
-                                        },
-                                        isWord:{
-                                            $set:String(record.isWord)
-                                        },
-                                    }
-                                }))
-                            }}>修改</a>
-                            <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                                Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要删除吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.SanitationCarAdmin.urls.delete,
-                                            params:{
-                                                carId:record.id
+                                        newRecord:{
+                                            adminRole:{
+                                                $set:record.adminRole
                                             },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                               
-                            }}>删除</a>
+                                            tel:{
+                                                $set:record.tel
+                                            },
+                                            carName:{
+                                                $set:record.carName
+                                            },
+                                            // driverName:{
+                                            //     $set:record.driverName
+                                            // },
+                                            carNumber:{
+                                                $set:record.carNumber
+                                            },
+                                            imei:{
+                                                $set:record.imei
+                                            },
+                                            type:{
+                                                $set:record.type
+                                            },
+                                            pro:{
+                                                $set:record.pro
+                                            },
+                                            city:{
+                                                $set:record.city
+                                            },
+                                            area:{
+                                                $set:record.area
+                                            },
+                                            isWord:{
+                                                $set:String(record.isWord)
+                                            },
+                                        }
+                                    }))
+                                }}>修改</a>:''
+                            }
+                            <Divider type="vertical" />
+                            {
+                                _this.state.permission.delete ?
+                                <a href="javascript:;" onClick={()=>{
+                                    Modal.confirm({
+                                        title:'提示',
+                                        content:'你确定要删除吗？',
+                                        okText:'确定',
+                                        cancelText:'取消',
+                                        onOk(){
+                                            Ajax.post({
+                                                url:config.SanitationCarAdmin.urls.delete,
+                                                params:{
+                                                    carId:record.id
+                                                },
+                                                success:(data)=>{
+                                                    _this.initIndex();
+                                                }
+                                            })
+                                        }
+                                    })
+                                   
+                                }}>删除</a>:''    
+                            }
+                            
                         </span>
                     )},
                 ],
@@ -271,12 +281,31 @@ class component extends Component{
     }
     componentDidMount(){
         this.initIndex()
+        this.initPermission()
     }
     componentWillUnmount() {
 
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    _this.state.permission[config.SanitationCarAdmin.permission[el.url]] = true;
+                })
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化页面数据
@@ -375,49 +404,53 @@ class component extends Component{
                     <Breadcrumb.Item>环卫车管理</Breadcrumb.Item>
                     <Breadcrumb.Item><a href="javascript:;">环卫车列表</a></Breadcrumb.Item>
                 </Breadcrumb>
-                <div className="main-toolbar">
-                    <Button type="primary" onClick={()=>{
-                        update('set',addons(state,{
-                            Modal:{
-                                visRecord:{
-                                    $set:true
+                {
+                    state.permission.add ?
+                    <div className="main-toolbar">
+                        <Button type="primary" onClick={()=>{
+                            update('set',addons(state,{
+                                Modal:{
+                                    visRecord:{
+                                        $set:true
+                                    }
+                                },
+                                recordType:{
+                                    $set:'add'
+                                },
+                                newRecord:{
+                                    carName:{
+                                        $set:''
+                                    },
+                                    // driverName:{
+                                    //     $set:''
+                                    // },
+                                    carNumber:{
+                                        $set:''
+                                    },
+                                    imei:{
+                                        $set:''
+                                    },
+                                    type:{
+                                        $set:''
+                                    },
+                                    pro:{
+                                        $set:''
+                                    },
+                                    city:{
+                                        $set:''
+                                    },
+                                    area:{
+                                        $set:''
+                                    },
+                                    isWord:{
+                                        $set:''
+                                    },
                                 }
-                            },
-                            recordType:{
-                                $set:'add'
-                            },
-                            newRecord:{
-                                carName:{
-                                    $set:''
-                                },
-                                // driverName:{
-                                //     $set:''
-                                // },
-                                carNumber:{
-                                    $set:''
-                                },
-                                imei:{
-                                    $set:''
-                                },
-                                type:{
-                                    $set:''
-                                },
-                                pro:{
-                                    $set:''
-                                },
-                                city:{
-                                    $set:''
-                                },
-                                area:{
-                                    $set:''
-                                },
-                                isWord:{
-                                    $set:''
-                                },
-                            }
-                        }))
-                    }}>添加环卫车</Button>
-                </div>
+                            }))
+                        }}>添加环卫车</Button>
+                    </div>:''    
+                }
+                
                 <div className="main-toolbar">
                     
                     <Input onChange={(e)=>{

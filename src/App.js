@@ -59,8 +59,7 @@ class component extends Component{
                 password2:''
             },
             menu:{
-                selectedKeys:['0-0'],
-                openKeys:['0']
+                selectedKeys:['0-0']
             },
             menuData:[]
         }
@@ -70,9 +69,6 @@ class component extends Component{
                 menu:{
                     selectedKeys:{
                         $set:[parseSearch(this.props.location.search)['menu']]
-                    },
-                    openKeys:{
-                        $set:[parseSearch(this.props.location.search)['subMenu']]
                     }
                 }
             }))
@@ -92,9 +88,6 @@ class component extends Component{
             menu:{
                 selectedKeys:{
                     $set:[parseSearch(_this.props.location.search)['menu']] || '0-0'
-                },
-                openKeys:{
-                    $set:[parseSearch(_this.props.location.search)['subMenu']] || '0'
                 }
             }
         }))
@@ -118,34 +111,14 @@ class component extends Component{
         const _this = this;
         if(!localStorage.getItem('token')) return;
         Ajax.get({
-            url:config.JurisdictionAdmin.urls.list,
-            params:{
-                type:1
-            },
+            url:config.JurisdictionAdmin.urls.listAll,
+            params:{},
             success:(data)=>{
                 _this.update('set',addons(_this.state,{
                     menuData:{
                         $set:data
                     }
                 }))
-                Ajax.get({
-                    url:config.JurisdictionAdmin.urls.list,
-                    params:{
-                        type:2,
-                        fatherMenuId:data[[parseSearch(_this.props.location.search)['subMenu']] || 0].id
-                    },
-                    success:(d)=>{
-                        _this.update('set',addons(_this.state,{
-                            menuData:{
-                                [[parseSearch(_this.props.location.search)['subMenu']] || 0]:{
-                                    children:{
-                                        $set:d
-                                    }
-                                }
-                            }
-                        }))
-                    }
-                })
             }
         })
     }
@@ -246,54 +219,35 @@ class component extends Component{
                                 <Menu
                                     style={{ width: 200, height:'100%' }}
                                     selectedKeys={state.menu.selectedKeys}
-                                    openKeys={state.menu.openKeys}
-                                    mode="inline"
-                                  >
+                                    defaultOpenKeys={[parseSearch(_this.props.location.search)['subMenu']||'0']}
+                                    mode="inline">
                                     {
                                         state.menuData.map((el,index)=>(
                                             <SubMenu key={index} 
                                                 title={<span onClick={()=>{
+                                                    let search = parseSearch(_this.props.location.search);
+                                                    search.menu=String(index) + '-' + '0';
+                                                    search.subMenu=String(index);
+                                                    search.id = el.children && el.children[0] && el.children[0].id;
                                                     props.history.push({
-                                                        pathname:el.path,
-                                                        search:'?subMenu='+index+'&menu='+index + '-' + '0'
+                                                        pathname: el.path,
+                                                        search:'?'+formatSearch(search)
                                                     })
                                                     _this.update('set',addons(_this.state,{
                                                         menu:{
-                                                            openKeys:{
-                                                                $set:[String(index)]
-                                                            },
                                                             selectedKeys:{
                                                                 $set:[String(index) + '-' + '0']
                                                             }
                                                         }
                                                     }))
-                                                    if(el.children) return;
-                                                    Ajax.get({
-                                                        url:config.JurisdictionAdmin.urls.list,
-                                                        params:{
-                                                            type:2,
-                                                            fatherMenuId:el.id
-                                                        },
-                                                        success:(d)=>{
-                                                            _this.update('set',addons(_this.state,{
-                                                                menuData:{
-                                                                    [index]:{
-                                                                        children:{
-                                                                            $set:d
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }))
-                                                        }
-                                                    })
                                                 }}><Icon type={el.icon || "folder"} /><span>{el.menuName}</span></span>}>
                                                 {
                                                     el.children && el.children.map((e,i)=>(
                                                         <Menu.Item onClick={()=>{
-                                                            
                                                             let search = parseSearch(_this.props.location.search);
                                                             search.menu=String(index) + '-' + i;
-
+                                                            search.subMenu=String(index);
+                                                            search.id = e.id;
                                                             props.history.push({
                                                                 pathname: e.path,
                                                                 search:'?'+formatSearch(search)
@@ -301,9 +255,6 @@ class component extends Component{
 
                                                             _this.update('set',addons(_this.state,{
                                                                 menu:{
-                                                                    openKeys:{
-                                                                        $set:[String(index)]
-                                                                    },
                                                                     selectedKeys:{
                                                                         $set:[String(index) + '-' + i]
                                                                     }

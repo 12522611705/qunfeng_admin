@@ -10,7 +10,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 
 // 组件
@@ -36,6 +36,15 @@ class component extends Component{
         };
         this.update = update.bind(this);
         this.state = {
+            permission:{
+                userAdminList:false,
+                userAdminDetails:false,
+                userGradeLogList:false,
+                userGradeLogDetails:false,
+                walletAdminList:false,
+                walletAdminDetails:false,
+                userAdminExportUserExcel:false,
+            },
             Modal:{
                 visContribution:false,
                 visContributionDetail:false,
@@ -111,31 +120,38 @@ class component extends Component{
                     { title: '绿色贡献值', dataIndex: 'contribution', key: 'contribution' , render:(text,record)=>(
                        <div>
                         <p style={{textAlign:'center'}}>{text||0}</p>
-                        <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
-                            _this.state.contributionParams.userId = record.id;
-                            _this.initContribution({
-                                Modal:{
-                                    visContribution:{$set:true}
-                                }
-                            })
-                        }} href="javascript:;">点击查看</a></p>
+                        {
+                            _this.state.permission.userGradeLogList?
+                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                                _this.state.contributionParams.userId = record.id;
+                                _this.initContribution({
+                                    Modal:{
+                                        visContribution:{$set:true}
+                                    }
+                                })
+                            }} href="javascript:;">点击查看</a></p>:''
+                        }
                        </div>
                     ) }, 
                     { title: '环保金余额', dataIndex: 'integral', key: 'integral' , render:(text,record)=>(
                        <div>
                         <p style={{textAlign:'center'}}>{text||0}</p>
-                        <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
-                            _this.state.integralParams.userId = record.id;
-                            _this.initIntegral({
-                                Modal:{
-                                    visIntegral:{$set:true}
-                                }
-                            })
-                        }} href="javascript:;">点击查看</a></p>
+                        {
+                            _this.state.permission.walletAdminList?
+                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                                _this.state.integralParams.userId = record.id;
+                                _this.initIntegral({
+                                    Modal:{
+                                        visIntegral:{$set:true}
+                                    }
+                                })
+                            }} href="javascript:;">点击查看</a></p>:''
+                        }
                        </div>
                     ) }, 
                     { title: '更多信息', dataIndex: 'more', key: 'more', render:(text,record)=>(
-                       <a style={{color:'#1155cc'}} onClick={()=>{
+                        _this.state.permission.userAdminDetails ?
+                        <a style={{color:'#1155cc'}} onClick={()=>{
                             Ajax.get({
                                 url:config.UserAdmin.urls.details,
                                 params:{
@@ -185,7 +201,7 @@ class component extends Component{
                                 }
                             })
                             
-                       }} href="javascript:;">点击查看</a>
+                       }} href="javascript:;">点击查看</a>:'--'
                     ) }, 
                 ],
                 data:[]
@@ -293,12 +309,32 @@ class component extends Component{
     }
     componentDidMount(){
         this.initIndex();  
+        this.initPermission();
     }
     componentWillUnmount() {
 
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    _this.state.permission[config.UserAdmin.permission[el.url]] = true;
+                })
+                console.log(_this.state.permission)
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化绿色贡献值表格

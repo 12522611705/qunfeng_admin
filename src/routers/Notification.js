@@ -10,7 +10,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 
@@ -30,6 +30,13 @@ class component extends Component{
         const _this = this;
         this.update = update.bind(this);
         this.state = {
+            permission:{
+                notificationList:false,
+                notificationAdd:false,
+                notificationUpdate:false,
+                notificationDelete:false,
+                notificationPublish:false,
+            },
             Modal:{
                visAdd:false
             },
@@ -68,68 +75,79 @@ class component extends Component{
                     { title: '发布时间', dataIndex: 'time', key: 'time' },
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
+                            {
+                                _this.state.permission.notificationPublish?
+                                <a href="javascript:;" onClick={()=>{
+                                    Modal.confirm({
+                                        title:'提示',
+                                        content:'你确定要发布该推文吗？',
+                                        okText:'确定',
+                                        cancelText:'取消',
+                                        onOk(){
+                                            Ajax.post({
+                                                url:config.Notification.urls.notificationPublish,
+                                                params:{
+                                                    id:[record.id]
+                                                },
+                                                success:(data)=>{
+                                                    _this.initIndex();
+                                                }
+                                            })
+                                        }
+                                    })
+                                }}>发布</a>:''    
+                            }
                             
-                            <a href="javascript:;" onClick={()=>{
-                                Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要发布该推文吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.Notification.urls.notificationPublish,
-                                            params:{
-                                                id:[record.id]
-                                            },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>发布</a>
                             <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                                _this.update('set',addons(_this.state,{
-                                    editorState:{$set:'update'},
-                                    record:{$set:record},
-                                    Modal:{visAdd:{$set:true}},
-                                    add:{
-                                        creationRoleName:{$set:record.creationRoleName},
-                                        headline:{$set:record.headline},
-                                        headlineImgUrl:{$set:record.headlineImgUrl},
-                                        text:{$set:BraftEditor.createEditorState(record.text)}
-                                    },
-                                    fileList:{
-                                        $set:[{
-                                            uid: '-1',
-                                            name: '缩列图',
-                                            status: 'done',
-                                            url: record.headlineImgUrl
-                                        }]
-                                    }
-                                }))
-                            }}>修改</a>
+                            {
+                                _this.state.permission.notificationUpdate?
+                                <a href="javascript:;" onClick={()=>{
+                                    _this.update('set',addons(_this.state,{
+                                        editorState:{$set:'update'},
+                                        record:{$set:record},
+                                        Modal:{visAdd:{$set:true}},
+                                        add:{
+                                            creationRoleName:{$set:record.creationRoleName},
+                                            headline:{$set:record.headline},
+                                            headlineImgUrl:{$set:record.headlineImgUrl},
+                                            text:{$set:BraftEditor.createEditorState(record.text)}
+                                        },
+                                        fileList:{
+                                            $set:[{
+                                                uid: '-1',
+                                                name: '缩列图',
+                                                status: 'done',
+                                                url: record.headlineImgUrl
+                                            }]
+                                        }
+                                    }))
+                                }}>修改</a>:''
+                            }
+                            
                             <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                                Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要删除该推文吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.Notification.urls.notificationDelete,
-                                            params:{
-                                                id:[record.id]
-                                            },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>删除</a>
+                            {
+                                _this.state.permission.notificationDelete?
+                                <a href="javascript:;" onClick={()=>{
+                                    Modal.confirm({
+                                        title:'提示',
+                                        content:'你确定要删除该推文吗？',
+                                        okText:'确定',
+                                        cancelText:'取消',
+                                        onOk(){
+                                            Ajax.post({
+                                                url:config.Notification.urls.notificationDelete,
+                                                params:{
+                                                    id:[record.id]
+                                                },
+                                                success:(data)=>{
+                                                    _this.initIndex();
+                                                }
+                                            })
+                                        }
+                                    })
+                                }}>删除</a>:''    
+                            }
+                            
                         </span>
                     )},
 
@@ -156,6 +174,7 @@ class component extends Component{
     }
     async componentDidMount(){
         this.initIndex()
+        this.initPermission();
     }
     componentWillUnmount() {
 
@@ -176,6 +195,25 @@ class component extends Component{
                 text:{$set:editorState}
             }
         }))
+    }
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    _this.state.permission[config.Notification.permission[el.url]] = true;
+                })
+                console.log(_this.state.permission)
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化页面数据
@@ -239,63 +277,74 @@ class component extends Component{
                     <Breadcrumb.Item><a href="javascript:;">后台用户列表</a></Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="main-toolbar">
-                    <Button onClick={()=>{
-                        update('set',addons(state,{
-                            editorState:{$set:'add'},
-                            Modal:{visAdd:{$set:true}},
-                            fileList:{
-                                $set:[]
-                            },
-                            add:{
-                                creationRoleName:{$set:''},
-                                headline:{$set:''},
-                                headlineImgUrl:{$set:''},
-                                text:{$set:BraftEditor.createEditorState(null)}
-                            }
-                        }))
-                    }} type="primary" style={{marginRight:10}}>添加</Button>
-                    <Button onClick={()=>{
-                        Modal.confirm({
-                            title:'提示',
-                            content:'你确定要删除选中推文吗？',
-                            okText:'确定',
-                            cancelText:'取消',
-                            onOk(){
-                                Ajax.post({
-                                    url:config.Notification.urls.notificationDelete,
-                                    params:{
-                                        id:state.tableIds
-                                    },
-                                    success:(data)=>{
-                                        state.tableIds = [];
-                                        state.selectedRowKeys = [];
-                                        _this.initIndex();
-                                    }
-                                })
-                            }
-                        })
-                    }} type="primary" style={{marginRight:10}}>批量删除</Button>
-                    <Button onClick={()=>{
-                        Modal.confirm({
-                            title:'提示',
-                            content:'你确定要发布选中推文吗？',
-                            okText:'确定',
-                            cancelText:'取消',
-                            onOk(){
-                                Ajax.post({
-                                    url:config.Notification.urls.notificationPublish,
-                                    params:{
-                                        id:state.tableIds
-                                    },
-                                    success:(data)=>{
-                                        state.tableIds = [];
-                                        state.selectedRowKeys = [];
-                                        _this.initIndex();
-                                    }
-                                })
-                            }
-                        })
-                    }} type="primary" style={{marginRight:10}}>批量发布</Button>
+                    {
+                        state.permission.notificationAdd?
+                        <Button onClick={()=>{
+                            update('set',addons(state,{
+                                editorState:{$set:'add'},
+                                Modal:{visAdd:{$set:true}},
+                                fileList:{
+                                    $set:[]
+                                },
+                                add:{
+                                    creationRoleName:{$set:''},
+                                    headline:{$set:''},
+                                    headlineImgUrl:{$set:''},
+                                    text:{$set:BraftEditor.createEditorState(null)}
+                                }
+                            }))
+                        }} type="primary" style={{marginRight:10}}>添加</Button>:''
+                    }
+                    
+                    {
+                        state.permission.notificationDelete?
+                        <Button onClick={()=>{
+                            Modal.confirm({
+                                title:'提示',
+                                content:'你确定要删除选中推文吗？',
+                                okText:'确定',
+                                cancelText:'取消',
+                                onOk(){
+                                    Ajax.post({
+                                        url:config.Notification.urls.notificationDelete,
+                                        params:{
+                                            id:state.tableIds
+                                        },
+                                        success:(data)=>{
+                                            state.tableIds = [];
+                                            state.selectedRowKeys = [];
+                                            _this.initIndex();
+                                        }
+                                    })
+                                }
+                            })
+                        }} type="primary" style={{marginRight:10}}>批量删除</Button>:''
+                    }
+                    {
+                        state.permission.notificationPublish?
+                        <Button onClick={()=>{
+                            Modal.confirm({
+                                title:'提示',
+                                content:'你确定要发布选中推文吗？',
+                                okText:'确定',
+                                cancelText:'取消',
+                                onOk(){
+                                    Ajax.post({
+                                        url:config.Notification.urls.notificationPublish,
+                                        params:{
+                                            id:state.tableIds
+                                        },
+                                        success:(data)=>{
+                                            state.tableIds = [];
+                                            state.selectedRowKeys = [];
+                                            _this.initIndex();
+                                        }
+                                    })
+                                }
+                            })
+                        }} type="primary" style={{marginRight:10}}>批量发布</Button>:''    
+                    }
+                    
                 </div>
                 <div className="main-toolbar">
                     推文状态：

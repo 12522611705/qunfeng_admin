@@ -8,7 +8,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
@@ -22,6 +22,18 @@ class component extends Component{
         const _this = this;
         this.update = update.bind(this);
         this.state = {
+            permission:{
+                roleAdminList:false,
+                roleAdminDelete:false,
+                roleAdminAddMenuToRole:false,
+                roleAdminAddRoleToAdminUser:false,
+                roleAdminDetails:false,
+                jurisdictionAdminList:false,
+                jurisdictionAdminListAll:false,
+                roleAdminAddRole:false,
+                roleAdminRoleListByUserId:false,
+                adminAddresAddAddresToAdminUser:false,
+            },
             Modal:{
                 visMenu:false,
                 visAddRole:false
@@ -47,52 +59,55 @@ class component extends Component{
                     { title: '状态', dataIndex: 'state', key: 'state'},
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
-                            <a href="javascript:;" onClick={()=>{
-                               Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要删除该角色吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.RoleAdmin.urls.delete,
-                                            params:{
-                                                carId:record.id
-                                            },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>删除</a>
+                            
+                                <a href="javascript:;" onClick={()=>{
+                                   Modal.confirm({
+                                        title:'提示',
+                                        content:'你确定要删除该角色吗？',
+                                        okText:'确定',
+                                        cancelText:'取消',
+                                        onOk(){
+                                            Ajax.post({
+                                                url:config.RoleAdmin.urls.delete,
+                                                params:{
+                                                    carId:record.id
+                                                },
+                                                success:(data)=>{
+                                                    _this.initIndex();
+                                                }
+                                            })
+                                        }
+                                    })
+                                }}>删除</a>
+                            
                             <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                                Ajax.get({
-                                    url:config.JurisdictionAdmin.urls.listAll,
-                                    params:{},
-                                    success:(data)=>{
-                                        Ajax.get({
-                                            url:config.RoleAdmin.urls.details,
-                                            params:{
-                                                roleId:record.id
-                                            },
-                                            success:(checkIds)=>{
-                                                let ids = [];
-                                                checkIds.forEach((el)=>{
-                                                    ids.push(el.id)
-                                                })
-                                                _this.update('set',addons(_this.state,{
-                                                    Modal:{visMenu:{$set:true}},
-                                                    treeData:{$set:data},
-                                                    menuTree:{checkedKeys:{$set:_this.getIdsByKeys(data,ids)}},
-                                                    record:{$set:record}
-                                               }))
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>添加菜单到角色</a>
+                            
+                                <a href="javascript:;" onClick={()=>{
+                                    Ajax.get({
+                                        url:config.JurisdictionAdmin.urls.listAll,
+                                        params:{},
+                                        success:(data)=>{
+                                            Ajax.get({
+                                                url:config.RoleAdmin.urls.details,
+                                                params:{
+                                                    roleId:record.id
+                                                },
+                                                success:(checkIds)=>{
+                                                    let ids = [];
+                                                    checkIds.forEach((el)=>{
+                                                        ids.push(el.id)
+                                                    })
+                                                    _this.update('set',addons(_this.state,{
+                                                        Modal:{visMenu:{$set:true}},
+                                                        treeData:{$set:data},
+                                                        menuTree:{checkedKeys:{$set:_this.getIdsByKeys(data,ids)}},
+                                                        record:{$set:record}
+                                                   }))
+                                                }
+                                            })
+                                        }
+                                    })
+                                }}>添加菜单到角色</a>
                         </span>
                     )},
 
@@ -110,13 +125,33 @@ class component extends Component{
         }
     }
     componentDidMount(){
-        this.initIndex()
+        this.initIndex();
+        this.initPermission();
     }
     componentWillUnmount() {
 
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    _this.state.permission[config.RoleAdmin.permission[el.url]] = true;
+                })
+                console.log(_this.state.permission)
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化页面数据
@@ -248,6 +283,7 @@ class component extends Component{
                     <Breadcrumb.Item>权限管理</Breadcrumb.Item>
                     <Breadcrumb.Item><a href="javascript:;">角色管理</a></Breadcrumb.Item>
                 </Breadcrumb>
+                
                 <div className="main-toolbar">
                     <Button onClick={()=>{
                         update('set',addons(state,{
@@ -255,6 +291,7 @@ class component extends Component{
                         }))
                     }} type="primary">添加角色</Button>
                 </div>
+                
                 <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}  
                     columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <div style={{marginTop:-42,textAlign:'right'}}>

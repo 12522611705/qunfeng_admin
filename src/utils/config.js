@@ -18,7 +18,15 @@ export const config = {
 			details:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/details'
 		},
 		router:{},
-		permission:{}
+		permission:{
+			'/flockpeak-shop/admin/userAdmin/list':'userAdminList',
+			'/flockpeak-shop/admin/userAdmin/details':'userAdminDetails',
+			'/flockpeak-shop/admin/userGradeLog/list':'userGradeLogList',
+			'/flockpeak-shop/admin/userGradeLog/details':'userGradeLogDetails',
+			'/flockpeak-shop/admin/walletAdmin/list':'walletAdminList',
+			'/flockpeak-shop/admin/walletAdmin/details':'walletAdminDetails',
+			'/flockpeak-shop/admin/userAdmin/exportUserExcel':'userAdminExportUserExcel'
+		}
 	},
 	// 权限管理
 	JurisdictionAdmin:{
@@ -51,6 +59,13 @@ export const config = {
 			add:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/add',	
 			exportSanitationCarExcel:'http://118.190.145.65:8888/flockpeak-shop/admin/sanitationCarAdmin/exportSanitationCarExcel',
 			sanitationCarExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/sanitationCarExcel',
+		},
+		permission:{
+			'/flockpeak-shop/admin/sanitationCarAdmin/delete':'delete',
+            '/flockpeak-shop/admin/sanitationCarAdmin/add':'add',
+            '/flockpeak-shop/admin/sanitationCarAdmin/update':'update',
+            '/flockpeak-shop/admin/sanitationCarAdmin/list':'list',
+            '/flockpeak-shop/admin/sanitationCarAdmin/details':'details'
 		}
 	},
 	// 角色管理
@@ -63,6 +78,18 @@ export const config = {
 			addRoleToAdminUser:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addRoleToAdminUser',
 			addRole:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/addRole',
 			roleListByUserId:'http://118.190.145.65:8888/flockpeak-shop/admin/roleAdmin/roleListByUserId',
+		},
+		permission:{
+			'/flockpeak-shop/admin/roleAdmin/list':'roleAdminList',
+			'/flockpeak-shop/admin/roleAdmin/delete':'roleAdminDelete',
+			'/flockpeak-shop/admin/roleAdmin/addMenuToRole':'roleAdminAddMenuToRole',
+			'/flockpeak-shop/admin/roleAdmin/addRoleToAdminUser':'roleAdminAddRoleToAdminUser',
+			'/flockpeak-shop/admin/roleAdmin/details':'roleAdminDetails',
+			'/flockpeak-shop/admin/jurisdictionAdmin/list':'jurisdictionAdminList',
+			'/flockpeak-shop/admin/jurisdictionAdmin/listAll':'jurisdictionAdminListAll',
+			'/flockpeak-shop/admin/roleAdmin/addRole':'roleAdminAddRole',
+			'/flockpeak-shop/admin/roleAdmin/roleListByUserId':'roleAdminRoleListByUserId',
+			'/flockpeak-shop/admin/adminAddres/addAddresToAdminUser':'adminAddresAddAddresToAdminUser'
 		}
 	},
 	// 收运费记录
@@ -81,6 +108,13 @@ export const config = {
 			notificationList:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationList',
 			notificationPublish:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationPublish',
 			notificationUpdate:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationUpdate'
+		},
+		permission:{
+			'/flockpeak-shop/admin/notificationAdmin/notificationList':'notificationList',
+			'/flockpeak-shop/admin/notificationAdmin/notificationAdd':'notificationAdd',
+			'/flockpeak-shop/admin/notificationAdmin/notificationUpdate':'notificationUpdate',
+			'/flockpeak-shop/admin/notificationAdmin/notificationDelete':'notificationDelete',
+			'/flockpeak-shop/admin/notificationAdmin/notificationPublish':'notificationPublish',
 		}
 	},
 	// 意见反馈
@@ -94,6 +128,10 @@ export const config = {
 		urls:{
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/list',
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/update'
+		},
+		permission:{
+			'/flockpeak-shop/admin/cardAdmin/list':'list',
+			'/flockpeak-shop/admin/cardAdmin/update':'update'
 		}
 	},
 	// 司机管理
@@ -103,6 +141,12 @@ export const config = {
 			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/delete',
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/list',
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/driverAdmin/update'
+		},
+		permission:{
+			'/flockpeak-shop/admin/driverAdmin/list':'list',
+			'/flockpeak-shop/admin/driverAdmin/add':'add',
+			'/flockpeak-shop/admin/driverAdmin/delete':'delete',
+			'/flockpeak-shop/admin/driverAdmin/update':'update',
 		}
 	},
 	// 区域管理

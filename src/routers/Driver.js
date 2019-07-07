@@ -10,7 +10,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax } from '../utils/global';
+import { Ajax, parseSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
@@ -24,6 +24,12 @@ class component extends Component{
         const _this = this;
         this.update = update.bind(this);
         this.state = {
+            permission:{
+                list:false,
+                add:false,
+                delete:false,
+                update:false,
+            },
             Modal:{
                visAdd:false
             },
@@ -62,45 +68,52 @@ class component extends Component{
                     { title: '最后修改时间', dataIndex: 'updateTime', key: 'updateTime'},
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         <span>
-                            <a href="javascript:;" onClick={()=>{
-                               Modal.confirm({
-                                    title:'提示',
-                                    content:'你确定要删除该角色吗？',
-                                    okText:'确定',
-                                    cancelText:'取消',
-                                    onOk(){
-                                        Ajax.post({
-                                            url:config.Driver.urls.delete,
-                                            params:{
-                                                id:record.id
-                                            },
-                                            success:(data)=>{
-                                                _this.initIndex();
-                                            }
-                                        })
-                                    }
-                                })
-                            }}>删除</a>
+                            {
+                                _this.state.permission.delete?
+                                <a href="javascript:;" onClick={()=>{
+                                   Modal.confirm({
+                                        title:'提示',
+                                        content:'你确定要删除该角色吗？',
+                                        okText:'确定',
+                                        cancelText:'取消',
+                                        onOk(){
+                                            Ajax.post({
+                                                url:config.Driver.urls.delete,
+                                                params:{
+                                                    id:record.id
+                                                },
+                                                success:(data)=>{
+                                                    _this.initIndex();
+                                                }
+                                            })
+                                        }
+                                    })
+                                }}>删除</a>:''    
+                            }
+                            
                             <Divider type="vertical" />
-                            <a href="javascript:;" onClick={()=>{
-                                _this.update('set',addons(_this.state,{
-		               				Modal:{visAdd:{$set:true}},
-		               				editorType:{$set:'update'},
-		               				record:{$set:record},
-		               				newRecord:{
-						            	annualAuditTime:{$set:record.annualAuditTime},
-										contractTime:{$set:record.contractTime},
-                                        drivingLicenseTime:{$set:record.drivingLicenseTime},
-                                        entryTime:{$set:record.entryTime},
-										driverAge:{$set:record.driverAge},
-										driverNumber:{$set:record.driverNumber},
-										drivingLicenceType:{$set:record.drivingLicenceType},
-										name:{$set:record.name},
-										tel:{$set:record.tel},
-										imei:{$set:record.imei},
-						            }
-		               			}))
-                            }}>修改</a>
+                            {
+                                _this.state.permission.update?
+                                <a href="javascript:;" onClick={()=>{
+                                    _this.update('set',addons(_this.state,{
+    		               				Modal:{visAdd:{$set:true}},
+    		               				editorType:{$set:'update'},
+    		               				record:{$set:record},
+    		               				newRecord:{
+    						            	annualAuditTime:{$set:record.annualAuditTime},
+    										contractTime:{$set:record.contractTime},
+                                            drivingLicenseTime:{$set:record.drivingLicenseTime},
+                                            entryTime:{$set:record.entryTime},
+    										driverAge:{$set:record.driverAge},
+    										driverNumber:{$set:record.driverNumber},
+    										drivingLicenceType:{$set:record.drivingLicenceType},
+    										name:{$set:record.name},
+    										tel:{$set:record.tel},
+    										imei:{$set:record.imei},
+    						            }
+    		               			}))
+                                }}>修改</a>:''
+                            }
                         </span>
                     )},
 
@@ -132,13 +145,33 @@ class component extends Component{
         }
     }
     componentDidMount(){
-        this.initIndex()
+        this.initIndex();
+        this.initPermission();
     }
     componentWillUnmount() {
 
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+    // 初始化权限管理
+    initPermission(){
+        const _this = this;
+        let search = parseSearch(_this.props.location.search);
+        Ajax.get({
+            url:config.JurisdictionAdmin.urls.list,
+            params:{
+                type:3,
+                fatherMenuId:search.id
+            },
+            success:(data)=>{
+                data.forEach((el)=>{
+                    _this.state.permission[config.Driver.permission[el.url]] = true;
+                })
+                console.log(_this.state.permission)
+                _this.setState({});
+            }
+        })
     }
     /*
      *  初始化页面数据
@@ -198,26 +231,30 @@ class component extends Component{
                     <Breadcrumb.Item>权限管理</Breadcrumb.Item>
                     <Breadcrumb.Item><a href="javascript:;">后台用户列表</a></Breadcrumb.Item>
                 </Breadcrumb>
-                <div className="main-toolbar">
-                    <Button onClick={()=>{
-                    	update('set',addons(state,{
-               				Modal:{visAdd:{$set:true}},
-               				editorType:{$set:'add'},
-               				newRecord:{
-				            	annualAuditTime:{$set:''},
-								contractTime:{$set:''},
-								driverAge:{$set:''},
-								driverNumber:{$set:''},
-								drivingLicenceType:{$set:'1'},
-								drivingLicenseTime:{$set:''},
-								entryTime:{$set:''},
-								name:{$set:''},
-								tel:{$set:''},
-								imei:{$set:''},
-				            }
-               			}))
-                    }} type="primary">添加司机</Button>
-                </div>
+                {
+                    state.permission.add ?
+                    <div className="main-toolbar">
+                        <Button onClick={()=>{
+                            update('set',addons(state,{
+                                Modal:{visAdd:{$set:true}},
+                                editorType:{$set:'add'},
+                                newRecord:{
+                                    annualAuditTime:{$set:''},
+                                    contractTime:{$set:''},
+                                    driverAge:{$set:''},
+                                    driverNumber:{$set:''},
+                                    drivingLicenceType:{$set:'1'},
+                                    drivingLicenseTime:{$set:''},
+                                    entryTime:{$set:''},
+                                    name:{$set:''},
+                                    tel:{$set:''},
+                                    imei:{$set:''},
+                                }
+                            }))
+                        }} type="primary">添加司机</Button>
+                    </div>:''    
+                }
+                
                 <div className="main-toolbar">
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
