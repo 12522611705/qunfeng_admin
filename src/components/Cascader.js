@@ -86,6 +86,7 @@ class component extends Component{
         const update = _this.update;
         return (
             <div style={{display:'inline-block'}} className="clearfix">
+                省：
                 <Select value={state.value.pro} style={{ width: 120, marginRight:10 }}>
                     <Select.Option value="">全部</Select.Option>                        
                     {
@@ -102,7 +103,7 @@ class component extends Component{
                         })
                     }
                 </Select>
-
+                市：
                 <Select value={state.value.city} style={{ width: 120, marginRight:10 }}>
                     <Select.Option value="">全部</Select.Option>
                     {
@@ -119,7 +120,7 @@ class component extends Component{
                         })
                     }
                 </Select>
-
+                区：
                 <Select value={state.value.area} style={{ width: 120, marginRight:10 }}>
                     <Select.Option value="">全部</Select.Option>
                     {
@@ -148,7 +149,7 @@ class component extends Component{
                         })
                     }
                 </Select>
-
+                小区名字：
                 <Select value={state.value.street} style={{ width: 120, marginRight:10 }}>
                     <Select.Option value="">全部</Select.Option>
                     {

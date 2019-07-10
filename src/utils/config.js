@@ -6,6 +6,8 @@ export const config = {
 	// 用户列表
 	UserAdmin:{
 		urls:{
+			updataUserAdmin:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/updataUserAdmin',
+			addUserAdmin:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/addUserAdmin',
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/list',
 			add:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/add',
 			exitLogin:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/exitLogin',
@@ -15,10 +17,14 @@ export const config = {
 			adminUserList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserList',
 			deleteUser:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/deleteUser',
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/update',
-			details:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/details'
+			details:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/details',
+			deleteUserAdmin:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/deleteUserAdmin'
 		},
 		router:{},
 		permission:{
+			'/flockpeak-shop/admin/userAdmin/deleteUserAdmin':'deleteUserAdmin',
+			'/flockpeak-shop/admin/userAdmin/addUserAdmin':'addUserAdmin',
+			'/flockpeak-shop/admin/userAdmin/updataUserAdmin':'updataUserAdmin',
 			'/flockpeak-shop/admin/userAdmin/list':'userAdminList',
 			'/flockpeak-shop/admin/userAdmin/details':'userAdminDetails',
 			'/flockpeak-shop/admin/userGradeLog/list':'userGradeLogList',

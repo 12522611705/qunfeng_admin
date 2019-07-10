@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Form } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, message,
+        Tag, DatePicker, LocaleProvider, Modal, Form } from 'antd';
 import moment from 'moment';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import 'moment/locale/zh-cn';
@@ -44,11 +45,18 @@ class component extends Component{
                 walletAdminList:false,
                 walletAdminDetails:false,
                 userAdminExportUserExcel:false,
+                addUserAdmin:false,
+                updataUserAdmin:false,
+                deleteUserAdmin:false
             },
             Modal:{
                 visContribution:false,
                 visContributionDetail:false,
-                visIntegral:false
+                visIntegral:false,
+                visUser:false
+            },
+            form:{
+
             },
             // 工具条查询参数
             toolbarParams:{
@@ -99,6 +107,7 @@ class component extends Component{
             },
             // 表格数据
             indexTable:{
+                selectedRowKeys:[],
                 pagination:{
                     current:1,
                     total:0,
@@ -305,6 +314,7 @@ class component extends Component{
                 ],
                 data:[]
             },
+            type:'add'
         }
     }
     componentDidMount(){
@@ -560,10 +570,55 @@ class component extends Component{
             }
         })
     }
+    updateForm(value,key){
+        this.state.form[key] = value;
+        this.setState({})
+    }
+    user(){
+        const _this = this;
+        let url = '';
+        let postData = {};
+        if(_this.state.type=='add'){
+            url = config.UserAdmin.urls.addUserAdmin;
+            postData={
+                ..._this.state.form,
+            }
+        }else if(_this.state.type=='update'){
+            url = config.UserAdmin.urls.updataUserAdmin;
+            postData={
+                ..._this.state.form,
+                id:_this.state.indexTable.selectedRowKeys[0]
+            }
+        }
+        if(!/^1\d{10}$/.test(_this.state.form.tel)) return message.info('请输入正确的手机号码');
+        if(!_this.state.form.password) return message.info('请输入密码');
+        if(!/^\d{17}$/.test(_this.state.form.ickNo)) return message.info('请输入正确的ick号码');
+        Ajax.post({
+            url,
+            params:postData,
+            success:(data)=>{
+                _this.initIndex({
+                    Modal:{
+                        visUser:{$set:false}
+                    }
+                })
+            }
+        })
+    }
     render(){
         const _this = this;
         const state = _this.state;
         const update = _this.update;
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 6 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 16 },
+          },
+        };
         return (
             <div className="content">
                 <Breadcrumb>
@@ -820,12 +875,83 @@ class component extends Component{
                             }
                         })
                     }}>重置</Button>
-                    <Button type="primary" onClick={()=>{
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        _this.state.Modal.visUser = true;
+                        _this.state.type = 'add';
+                        _this.setState({});
+                    }}>增加</Button>
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                        if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                        _this.state.Modal.visUser = true;
+                        _this.state.type = 'update';
+                        let record = {};
+                        _this.state.indexTable.data.forEach((el)=>{
+                            if(el.id == _this.state.indexTable.selectedRowKeys[0]){
+                                record = el;
+                            }
+                        })
+                        _this.state.form = {
+                            ickNo:record.ickNo,
+                            tel:record.tel,
+                            password:record.password,
+                            source:record.source,
+                            pro:record.pro,
+                            city:record.city,
+                            area:record.area,
+                            street:record.street,
+                            plot:record.plot,
+                            companyName:record.companyName,
+                            type:record.type,
+                            room:record.room,
+                            ridgepole:record.ridgepole,
+                            community:record.community
+                        }
+                        _this.setState({});
+                    }}>修改</Button>
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                        if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                        Modal.confirm({
+                            title:'提示',
+                            content:'你确定要删除吗？',
+                            okText:'确定',
+                            cancelText:'取消',
+                            onOk(){
+                                Ajax.post({
+                                    url:config.UserAdmin.urls.deleteUserAdmin,
+                                    params:{
+                                        id:_this.state.indexTable.selectedRowKeys[0]
+                                    },
+                                    success:(data)=>{
+                                        _this.initIndex({})
+                                    }
+                                }) 
+                            }
+                        })
+                    }}>删除</Button>
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        
+                    }}>数据导入</Button>
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                        
+                    }}>数据导出</Button>
                 </div>
-                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}
-                    columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                <Table 
+                    rowKey={record=>record.id} 
+                    rowSelection={{
+                        selectedRowKeys:state.indexTable.selectedRowKeys,
+                        onChange:(selectedRowKeys)=>{
+                            state.indexTable.selectedRowKeys = selectedRowKeys;
+                            _this.setState({});
+                        }
+                    }}
+                    pagination={state.indexTable.pagination}
+                    columns={state.indexTable.head} 
+                    dataSource={state.indexTable.data} />
                 <div style={{marginTop:-42,textAlign:'right'}}>
                     <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
                 </div>
@@ -919,6 +1045,94 @@ class component extends Component{
                 >
                   <Table rowKey={record=>record.name} pagination={state.integralTableDetail.pagination}
                     columns={state.integralTableDetail.head} dataSource={state.integralTableDetail.data} />
+                </Modal>
+                <Modal title="用户信息"
+                  width = '680px'
+                  visible={state.Modal.visUser}
+                  onOk={_this.user.bind(_this)}
+                  onCancel={()=>{
+                    update('set',addons(state,{
+                        Modal:{visUser:{$set:false}}
+                    }))
+                  }}
+                >
+                    <Form.Item {...formItemLayout} label='ICK号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'ickNo')
+                        }} type="text" value={state.form.ickNo}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='用户手机号码'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'tel')
+                        }} type="text" value={state.form.tel}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='用户密码'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'password')
+                        }} type="text" value={state.form.password}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='用户来源'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'source')
+                        }} style={{width:200}} value={state.form.source}>
+                            <Select.Option value="">全部</Select.Option>
+                            <Select.Option value="1">H5</Select.Option>
+                            <Select.Option value="2">安卓</Select.Option>
+                            <Select.Option value="3">IOS</Select.Option>
+                            <Select.Option value="4">ICK</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='地区选择'>
+                        <Cascader data={state.form} onChange={(data)=>{
+                            console.log(data)
+                            update('set',addons(state,{
+                                form:{
+                                    pro:{$set:data.pro},
+                                    city:{$set:data.city},
+                                    area:{$set:data.area},
+                                    street:{$set:data.street}
+                                }
+                            }))
+                        }}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='小区名字'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'plot')
+                        }} type="text" value={state.form.plot}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='公司或者物业名称'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'companyName')
+                        }} type="text" value={state.form.companyName}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='用户类型'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'type')
+                        }} style={{width:200}} value={state.form.type}>
+                            <Select.Option value="0">居民</Select.Option>
+                            <Select.Option value="1">保洁员</Select.Option>
+                            <Select.Option value="2">物业公司工作人员</Select.Option>
+                            <Select.Option value="3">街道人员</Select.Option>
+                            <Select.Option value="4">城管局</Select.Option>
+                            <Select.Option value="5">司机</Select.Option>
+                            <Select.Option value="6">公司员工</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='单元：房号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'room')
+                        }} type="text" value={state.form.room}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='单元：栋'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'ridgepole')
+                        }} type="text" value={state.form.ridgepole}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='社区名字'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'community')
+                        }} type="text" value={state.form.community}/>
+                    </Form.Item>
                 </Modal>
             </div>
         );
