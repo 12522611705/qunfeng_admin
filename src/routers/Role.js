@@ -95,12 +95,16 @@ class component extends Component{
                                                 success:(checkIds)=>{
                                                     let ids = [];
                                                     checkIds.forEach((el)=>{
-                                                        ids.push(el.id)
+                                                        if(el.status==0){
+                                                            ids.push(el.id)    
+                                                        }
                                                     })
                                                     _this.update('set',addons(_this.state,{
                                                         Modal:{visMenu:{$set:true}},
                                                         treeData:{$set:data},
-                                                        menuTree:{checkedKeys:{$set:_this.getIdsByKeys(data,ids)}},
+                                                        menuTree:{
+                                                            checkedKeys:{$set:_this.getIdsByKeys(data,ids)}
+                                                        },
                                                         record:{$set:record}
                                                    }))
                                                 }
@@ -115,7 +119,8 @@ class component extends Component{
                 data:[]
             },
             menuTree:{
-                checkedKeys:[]
+                checkedKeys:[],
+                halfValue:[]
             },
             treeData:[],
             addRole:{
@@ -185,26 +190,7 @@ class component extends Component{
             }
         })
     }
-    /**
-     * @desc   树列表递归
-     * @date   2019-04-09
-     * @author luozhou
-     * @param  {String} data    数组
-     * @param  {String} i       key值
-     */
-    // renderMenuTreeNodes(data,i){
-    //     return data.map((item,index)=>{
-    //         item.key = index;
-    //         if (item.children) {
-    //             return (
-    //                 <Tree.TreeNode id={item.id} title={item.menuName} key={item.key} dataRef={item}>
-    //                     {this.renderMenuTreeNodes(item.children,item.key)}
-    //                 </Tree.TreeNode>
-    //             );
-    //         }
-    //         return <Tree.TreeNode id={item.id} key={i>=0 ? (i+'-'+index) : index} title={item.menuName} />;
-    //     })
-    // }
+    // 渲染树子节点
     renderMenuTreeNodes(data,i){
         return data.map((item,index)=>{
             if (item.children) {
@@ -225,19 +211,28 @@ class component extends Component{
      * @param  {Array}  data    数组
      * @param  {String} data    id字符串
      */
-    getKeysByIds(data,keys,idType='id'){
+    getKeysByIds(data,keys,halfKeys){
         let ids = [];
-        const fn = (data,keys)=>{
+        const fn = (data,keys,halfKeys)=>{
             data.map((el)=>{
                 if(keys.indexOf(el.key)>=0){
-                    ids.push(el[idType])
+                    ids.push({
+                        menuId:el.id,
+                        status:0
+                    })
+                }
+                if(halfKeys.indexOf(el.key)>=0){
+                    ids.push({
+                        menuId:el.id,
+                        status:1
+                    })
                 }
                 if(el.children){
-                    fn(el.children,keys)
+                    fn(el.children,keys,halfKeys)
                 }
             })
         }
-        fn(data,keys);
+        fn(data,keys,halfKeys);
         return ids;
     }
     /**
@@ -306,8 +301,7 @@ class component extends Component{
                         Ajax.post({
                             url:config.RoleAdmin.urls.addMenuToRole,
                             params:{
-                                // roleIds:JSON.stringify(_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys)),
-                                menuIds:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys),
+                                menuIds:_this.getKeysByIds(state.treeData,state.menuTree.checkedKeys,state.menuTree.halfValue),
                                 roleId:state.record.id
                             },
                             success:(data)=>{
@@ -325,6 +319,9 @@ class component extends Component{
                                     menuTree:{
                                         checkedKeys:{
                                             $set:checkedKeys
+                                        },
+                                        halfValue:{
+                                            $set:checkedNodes.halfCheckedKeys
                                         }
                                     }
                                 }))

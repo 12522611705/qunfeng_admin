@@ -49,7 +49,7 @@ class component extends Component{
     // 添加省市区
     add(node,eve){
         eve.stopPropagation();
-        const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode][node.type-1];
+        const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][node.type-1];
         const type = node.type;
 
         this.update('set',addons(this.state,{
@@ -79,7 +79,7 @@ class component extends Component{
                 Ajax.post({
                     url:config.Addres.urls.delete,
                     params:{
-                        id:['',node.provinceId,node.cityId,node.areaId,node.streetId][node.type],
+                        id:['',node.provinceId,node.cityId,node.areaId,node.streetId,node.communityId][node.type],
                         type:node.type
                     },
                     success:(data)=>{
@@ -93,7 +93,6 @@ class component extends Component{
     editor(node,eve){
         eve.stopPropagation();
         const type = node.type;
-
         this.update('set',addons(this.state,{
             Modal:{
                 visAdd:{
@@ -104,7 +103,27 @@ class component extends Component{
                 editorStatus:{$set:'editor'},
                 type:{$set:type},
                 text:{$set:['',node.provinceName,node.cityName,node.areaName,node.street][node.type]},
-                id:{$set:['',node.provinceId,node.cityId,node.areaId,node.streetId][node.type]}
+                id:{$set:['',node.provinceId,node.cityId,node.areaId,node.streetId,node.communityId][node.type]}
+            }
+        }))
+    }
+    // 增加社区
+    addComm(node,eve){
+        eve.stopPropagation();
+        const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][node.type-1];
+        const type = node.type;
+
+        this.update('set',addons(this.state,{
+            Modal:{
+                visAdd:{
+                    $set:true
+                }
+            },
+            area:{
+                editorStatus:{$set:'add'},
+                type:{$set:type},
+                text:{$set:''},
+                parentCode:{$set:parentCode}
             }
         }))
     }
@@ -115,24 +134,26 @@ class component extends Component{
             if (item.children) {
                 return (
                     <TreeNode  
-                        title={[['',item.provinceName,item.cityName,item.areaName,item.street][item.type],<span key="1" style={{position:'absolute',left:300}}>
+                        title={[['',item.provinceName,item.cityName,item.areaName,item.street,item.communityName][item.type],<span key="1" style={{position:'absolute',left:300}}>
                             <a onClick={_this.add.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加</a>
+                            <a onClick={_this.addComm.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加社区</a>
                             <a onClick={_this.editor.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">编辑</a>
                             <a onClick={_this.del.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">删除</a>
                         </span>]} 
-                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode][item.type]} 
+                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type]} 
                         dataRef={item}>
                         {this.renderTreeNodes(item.children)}
                     </TreeNode>
                 );
             }
             return <TreeNode 
-                        title={[['',item.provinceName,item.cityName,item.areaName,item.street][item.type],<span key="1" style={{position:'absolute',left:300}}>
+                        title={[['',item.provinceName,item.cityName,item.areaName,item.street,item.communityName][item.type],<span key="1" style={{position:'absolute',left:300}}>
                             <a onClick={_this.add.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加</a>
+                            <a onClick={_this.addComm.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加社区</a>
                             <a onClick={_this.editor.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">编辑</a>
                             <a onClick={_this.del.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">删除</a>
                         </span>]} 
-                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode][item.type]}
+                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type]}
             {...item} />;
         })
     }
@@ -141,7 +162,7 @@ class component extends Component{
         const fn = (data)=>{
             for(let i=0;i<data.length;i++){
                 let item = data[i];
-                if(['',item.provinceCode,item.cityCode,item.areaCode,item.areaCode][item.type] == key){
+                if(['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type] == key){
                     item.children = children;
                     return;
                 }
@@ -200,6 +221,17 @@ class component extends Component{
                                     update('set',addons(state,{}));
                                 }
                             })
+                        }else if(info.node.props.type==4){
+                            Ajax.get({
+                                url:config.Addres.urls.userCommunityListByCode,
+                                params:{
+                                    code:selectedKeys[0]
+                                },
+                                success:(data)=>{
+                                    _this.insertChildrenToTree(selectedKeys[0], data);
+                                    update('set',addons(state,{}));
+                                }
+                            })
                         }
                     }}
                     onCheck={(checkedKeys,info)=>{
@@ -207,7 +239,9 @@ class component extends Component{
                         info.checkedNodes.forEach((item)=>{
                             const type = item.props.type || item.props.dataRef.type;
                             const code = item.key;
-                            const ids = item.props.dataRef ? ['',item.props.dataRef.provinceId,item.props.dataRef.cityId,item.props.dataRef.areaId,item.props.dataRef.streetId] : ['',item.props.provinceId,item.props.cityId,item.props.areaId,item.props.streetId];
+                            const ids = item.props.dataRef ? 
+                                ['',item.props.dataRef.provinceId,item.props.dataRef.cityId,item.props.dataRef.areaId,item.props.dataRef.streetId,item.props.dataRef.communityId] : 
+                                ['',item.props.provinceId,item.props.cityId,item.props.areaId,item.props.streetId,item.props.communityId];
                             address.push({
                                 type:type,
                                 code:code,

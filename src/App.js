@@ -177,7 +177,7 @@ class component extends Component{
                     <div id="app">
                         <div className={[styles.toolbar,'clearfix'].join(' ')}>
                             <div className={styles.logo}>
-                                <Icon style={{fontSize:18,marginRight:10}} type="windows" />系统管理
+                                <img height='50' src={logo}/>
                             </div>
                             <div className={styles.user}>
                                 <Dropdown overlay={

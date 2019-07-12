@@ -6,6 +6,10 @@ export const config = {
 	// 用户列表
 	UserAdmin:{
 		urls:{
+			userExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/userExcel',
+			importExcelUser:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/importExcelUser',
+			garbageOrderList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/garbageOrderList',
+			depositList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/depositList',
 			updataUserAdmin:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/updataUserAdmin',
 			addUserAdmin:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/addUserAdmin',
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/list',
@@ -22,6 +26,8 @@ export const config = {
 		},
 		router:{},
 		permission:{
+			'/flockpeak-shop/admin/userAdmin/garbageOrderList':'garbageOrderList',
+			'/flockpeak-shop/admin/userAdmin/depositList':'depositList',
 			'/flockpeak-shop/admin/userAdmin/deleteUserAdmin':'deleteUserAdmin',
 			'/flockpeak-shop/admin/userAdmin/addUserAdmin':'addUserAdmin',
 			'/flockpeak-shop/admin/userAdmin/updataUserAdmin':'updataUserAdmin',
@@ -158,13 +164,19 @@ export const config = {
 	// 区域管理
 	Addres:{
 		urls:{
+			userCommunityListByCode:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/userCommunityListByCode',
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/add',
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/list',
 			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/delete',
 			addAddresToAdminUser:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/addAddresToAdminUser',
 			add:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/add',
 			update:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/update',
-			streetList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/streetList'
-
+			streetList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/streetList',
+			userAreaList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/userAreaList',
+			userCityList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/userCityList',
+			userCommunityList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/userCommunityList',
+			userProvinceList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/userProvinceList',
+			userStreetList:'http://118.190.145.65:8888/flockpeak-shop/admin/adminAddres/userStreetList',
 		}
 	}
 }

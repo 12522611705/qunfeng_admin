@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, message,
+import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, message, Upload,
         Tag, DatePicker, LocaleProvider, Modal, Form } from 'antd';
 import moment from 'moment';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
@@ -11,7 +11,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax, parseSearch } from '../utils/global';
+import { Ajax, parseSearch, formatSearch } from '../utils/global';
 import { config } from '../utils/config';
 
 // 组件
@@ -38,6 +38,8 @@ class component extends Component{
         this.update = update.bind(this);
         this.state = {
             permission:{
+                garbageOrderList:false,
+                depositList:false,
                 userAdminList:false,
                 userAdminDetails:false,
                 userGradeLogList:false,
@@ -53,7 +55,8 @@ class component extends Component{
                 visContribution:false,
                 visContributionDetail:false,
                 visIntegral:false,
-                visUser:false
+                visUser:false,
+                visDeposit:false
             },
             form:{
 
@@ -94,6 +97,13 @@ class component extends Component{
             contributionParamsDetail:{
                 orderId:''
             },
+            // 提现参数
+            depositParams:{
+                createTimeStart:'',
+                createTimeEnd:'',
+                id:'',
+                uid:''
+            },
             // 环保金参数
             integralParams:{
                 createTimeStart:'',
@@ -104,6 +114,26 @@ class component extends Component{
             integralParamsDetail:{
                 orderId:'',
                 type:''
+            },
+            // 提现详情
+            depositTable:{
+                pagination:{
+                    current:1,
+                    total:0,
+                    pageSize:10,
+                    onChange(page){
+                        _this.state.depositTable.pagination.current = page;
+                        _this.initDeposit();
+                    }
+                },
+                head:[
+                    { title: '提现名字', dataIndex: 'name', key: 'name'}, 
+                    { title: '手机号码', dataIndex: 'tel', key: 'tel'}, 
+                    { title: '提现金额', dataIndex: 'money', key: 'money'}, 
+                    { title: '提现时间', dataIndex: 'careateTime', key: 'careateTime' }, 
+                    { title: '备注', dataIndex: 'remark', key: 'remark' }
+                ],
+                data:[]
             },
             // 表格数据
             indexTable:{
@@ -126,6 +156,7 @@ class component extends Component{
                     )}, 
                     { title: '所属物业公司', dataIndex: 'companyName', key: 'companyName' }, 
                     { title: 'IC卡号码', dataIndex: 'ickNo', key: 'ickNo' }, 
+                    { title: '投放总重量Kg', dataIndex: 'throwIn', key: 'throwIn' }, 
                     { title: '绿色贡献值', dataIndex: 'contribution', key: 'contribution' , render:(text,record)=>(
                        <div>
                         <p style={{textAlign:'center'}}>{text||0}</p>
@@ -152,6 +183,22 @@ class component extends Component{
                                 _this.initIntegral({
                                     Modal:{
                                         visIntegral:{$set:true}
+                                    }
+                                })
+                            }} href="javascript:;">点击查看</a></p>:''
+                        }
+                       </div>
+                    ) }, 
+                    { title: '提现', dataIndex: 'drawings', key: 'drawings' , render:(text,record)=>(
+                       <div>
+                        <p style={{textAlign:'center'}}>{text||0}</p>
+                        {
+                            _this.state.permission.depositList?
+                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                                _this.state.depositParams.uid = record.id;
+                                _this.initDeposit({
+                                    Modal:{
+                                        visDeposit:{$set:true}
                                     }
                                 })
                             }} href="javascript:;">点击查看</a></p>:''
@@ -276,41 +323,11 @@ class component extends Component{
                 },
                 head:[
                     { title: '时间', dataIndex: 'createTime', key: 'createTime'}, 
-                    { title: '客户端', dataIndex: 'source', key: 'source',record:(text)=>(
-                        ['','微信','安卓','ios','IC卡'][text]
-                    )}, 
-                    { title: '变动情况', dataIndex: 'integral', key: 'integral'}, 
-                    { title: '余额', dataIndex: 'laterIntegral', key: 'laterIntegral' }, 
-                    { title: '备注', dataIndex: 'remark', key: 'remark' }, 
-                    { title: '详情', dataIndex: 'more', key: 'more' , render:(text,record)=>(
-                        <a style={{color:'#1155cc'}} onClick={()=>{
-                            _this.state.integralParamsDetail.orderId = record.orderId;
-                            _this.state.integralParamsDetail.type = record.type;
-                            _this.initIntegralDetail({
-                                Modal:{
-                                    visIntegralDetail:{$set:true}    
-                                }
-                            });
-                        }} href="javascript:;">点击查看</a>
-                    ) }, 
-                ],
-                data:[]
-            },
-            // 环保金详情表格
-            integralTableDetail:{
-                pagination:{
-                    current:1,
-                    total:0,
-                    pageSize:10,
-                    onChange(page){
-                        _this.state.integralTableDetail.pagination.current = page;
-                        _this.initIntegralDetail();
-                    }
-                },
-                head:[
-                    { title: '种类', dataIndex: 'name', key: 'name'}, 
-                    { title: '重量（kg）', dataIndex: 'weight', key: 'weight'}, 
-                    { title: '变动情况', dataIndex: 'integral', key: 'integral'}
+                    { title: '设备编号', dataIndex: 'number', key: 'number'}, 
+                    { title: '回收类别', dataIndex: 'typeName', key: 'typeName' }, 
+                    { title: '重量（kg）', dataIndex: 'weight', key: 'weight' },
+                    { title: '环保金', dataIndex: 'integral', key: 'integral' },
+                    { title: '绿色贡献值', dataIndex: 'green', key: 'green' }
                 ],
                 data:[]
             },
@@ -341,7 +358,6 @@ class component extends Component{
                 data.forEach((el)=>{
                     _this.state.permission[config.UserAdmin.permission[el.url]] = true;
                 })
-                console.log(_this.state.permission)
                 _this.setState({});
             }
         })
@@ -430,6 +446,44 @@ class component extends Component{
         })
     }
     /*
+     *  查看提现详情
+     */
+    initDeposit(updateParams){
+        const _this = this;
+        return new Promise((resolve,reject)=>{
+            Ajax.get({
+                url:config.UserAdmin.urls.depositList,
+                params:{
+                    userId:_this.state.depositParams.uid,
+                    pageSize:_this.state.depositTable.pagination.pageSize,
+                    page:_this.state.depositTable.pagination.current
+                },
+                success:(data)=>{
+                    _this.update('set',addons(_this.state,{
+                        depositTable:{
+                            data:{
+                                $set:data.data||[]
+                            },
+                            pagination:{
+                                total:{
+                                    $set:data.count
+                                },
+                                pageSize:{
+                                    $set:data.pageSize
+                                },
+                                current:{
+                                    $set:_this.state.depositTable.pagination.current
+                                }
+                            }
+                        },
+                        ...updateParams
+                    }))
+                    resolve(data)
+                }
+            })
+        })
+    }
+    /*
      *  初始化环保金额表格
      */
     initIntegral(updateParams){
@@ -438,11 +492,10 @@ class component extends Component{
         const params = _this.state.integralParams;
         return new Promise((resolve,reject)=>{
             Ajax.get({
-                url:config.WalletAdmin.urls.list,
+                url:config.UserAdmin.urls.garbageOrderList,
                 params:{
-                    createTimeStart:new Date(params.createTimeStart).getTime()||'',
-                    createTimeEnd:new Date(params.createTimeEnd).getTime()||'',
-                    id:params.id||'',
+                    startTime:new Date(params.createTimeStart).getTime()||'',
+                    endTime :new Date(params.createTimeEnd).getTime()||'',
                     userId:params.userId||'',
                     pageSize:_this.state.integralTable.pagination.pageSize,
                     page:_this.state.integralTable.pagination.current
@@ -472,48 +525,7 @@ class component extends Component{
             })
         })
     }
-    /*
-     *  初始化环保金详情表格
-     */
-    initIntegralDetail(updateParams){
-        const _this = this;
-        const params = _this.state.integralParams;
-        const paramsDetail = _this.state.integralParamsDetail;
-        return new Promise((resolve,reject)=>{
-            Ajax.get({
-                url:config.WalletAdmin.urls.details,
-                params:{
-                    orderId:paramsDetail.orderId,
-                    type:paramsDetail.type,
-                    // userId:params.userId,
-                    pageSize:_this.state.integralTableDetail.pagination.pageSize,
-                    page:_this.state.integralTableDetail.pagination.current
-                },
-                success:(data)=>{
-                    _this.update('set',addons(_this.state,{
-                        integralTableDetail:{
-                            data:{
-                                $set:data.data||[]
-                            },
-                            pagination:{
-                                total:{
-                                    $set:data.count
-                                },
-                                pageSize:{
-                                    $set:data.pageSize
-                                },
-                                current:{
-                                    $set:_this.state.integralTableDetail.pagination.current
-                                }
-                            }
-                        },
-                        ...updateParams
-                    }))
-                    resolve(data)
-                }
-            })
-        })
-    }
+    
     /*
      *  初始化页面数据
      */
@@ -676,24 +688,13 @@ class component extends Component{
                 <div className="main-toolbar">
                     详细地址：
                     <Cascader data={state.toolbarParams} onChange={(data)=>{
-                        console.log(data)
                         update('set',addons(state,{
                             toolbarParams:{
                                 pro:{$set:data.pro},
                                 city:{$set:data.city},
                                 area:{$set:data.area},
-                                street:{$set:data.street}
-                            }
-                        }))
-                    }}/>
-                    详细地址：<Input style={{width:200}} type="text" 
-                        placeholder="请输入详细地址"
-                        value={state.toolbarParams.address} onChange={(e)=>{
-                        update('set',addons(state,{
-                            toolbarParams:{
-                                address:{
-                                    $set:e.target.value
-                                }    
+                                street:{$set:data.street},
+                                comm:{$set:data.comm}
                             }
                         }))
                     }}/>
@@ -878,67 +879,88 @@ class component extends Component{
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        _this.state.Modal.visUser = true;
-                        _this.state.type = 'add';
-                        _this.setState({});
-                    }}>增加</Button>
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
-                        if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
-                        _this.state.Modal.visUser = true;
-                        _this.state.type = 'update';
-                        let record = {};
-                        _this.state.indexTable.data.forEach((el)=>{
-                            if(el.id == _this.state.indexTable.selectedRowKeys[0]){
-                                record = el;
+                    {
+                        state.permission.addUserAdmin ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            _this.state.Modal.visUser = true;
+                            _this.state.type = 'add';
+                            _this.setState({});
+                        }}>增加</Button>:''    
+                    }
+                    {
+                        state.permission.updataUserAdmin?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                            _this.state.Modal.visUser = true;
+                            _this.state.type = 'update';
+                            let record = {};
+                            _this.state.indexTable.data.forEach((el)=>{
+                                if(el.id == _this.state.indexTable.selectedRowKeys[0]){
+                                    record = el;
+                                }
+                            })
+                            _this.state.form = {
+                                ickNo:record.ickNo,
+                                tel:record.tel,
+                                password:record.password,
+                                source:record.source,
+                                pro:record.pro,
+                                city:record.city,
+                                area:record.area,
+                                street:record.street,
+                                plot:record.plot,
+                                companyName:record.companyName,
+                                type:record.type,
+                                room:record.room,
+                                ridgepole:record.ridgepole,
+                                community:record.community
                             }
-                        })
-                        _this.state.form = {
-                            ickNo:record.ickNo,
-                            tel:record.tel,
-                            password:record.password,
-                            source:record.source,
-                            pro:record.pro,
-                            city:record.city,
-                            area:record.area,
-                            street:record.street,
-                            plot:record.plot,
-                            companyName:record.companyName,
-                            type:record.type,
-                            room:record.room,
-                            ridgepole:record.ridgepole,
-                            community:record.community
-                        }
-                        _this.setState({});
-                    }}>修改</Button>
+                            _this.setState({});
+                        }}>修改</Button>:''    
+                    }
+                    
+                    {
+                        state.permission.deleteUserAdmin?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行删除');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行删除');
+                            Modal.confirm({
+                                title:'提示',
+                                content:'你确定要删除吗？',
+                                okText:'确定',
+                                cancelText:'取消',
+                                onOk(){
+                                    Ajax.post({
+                                        url:config.UserAdmin.urls.deleteUserAdmin,
+                                        params:{
+                                            ids:_this.state.indexTable.selectedRowKeys
+                                        },
+                                        success:(data)=>{
+                                            _this.initIndex({})
+                                        }
+                                    }) 
+                                }
+                            })
+                        }}>删除</Button>:''
+                    }
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
-                        if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
-                        Modal.confirm({
-                            title:'提示',
-                            content:'你确定要删除吗？',
-                            okText:'确定',
-                            cancelText:'取消',
-                            onOk(){
-                                Ajax.post({
-                                    url:config.UserAdmin.urls.deleteUserAdmin,
-                                    params:{
-                                        id:_this.state.indexTable.selectedRowKeys[0]
-                                    },
-                                    success:(data)=>{
-                                        _this.initIndex({})
-                                    }
-                                }) 
-                            }
-                        })
-                    }}>删除</Button>
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        
-                    }}>数据导入</Button>
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        
+                        window.open(config.UserAdmin.urls.userExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
+                    
+                    <Upload name="file" 
+                        style={{display:'inline'}}
+                        fileList={[]}
+                        headers={{
+                            token:localStorage.getItem('token')
+                        }}
+                        action="http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/importExcelUser" 
+                        onChange={(info)=>{
+                            _this.initIndex();
+                        }}>
+                        <Button style={{marginRight:10}} type="primary">数据导入</Button>
+                    </Upload>
+                    
                 </div>
                 <Table 
                     rowKey={record=>record.id} 
@@ -1034,18 +1056,40 @@ class component extends Component{
                     <Table rowKey={record=>record.id} pagination={state.integralTable.pagination}
                     columns={state.integralTable.head} dataSource={state.integralTable.data} />
                 </Modal>
-                <Modal title="环保金详情"
-                  width = '680px'
-                  visible={state.Modal.visIntegralDetail}
+                <Modal title="提现详情"
+                  visible={state.Modal.visDeposit}
                   onCancel={()=>{
                     update('set',addons(state,{
-                        Modal:{visIntegralDetail:{$set:false}}
+                        Modal:{visDeposit:{$set:false}}
                     }))
                   }}
                 >
-                  <Table rowKey={record=>record.name} pagination={state.integralTableDetail.pagination}
-                    columns={state.integralTableDetail.head} dataSource={state.integralTableDetail.data} />
+                    <div style={{marginBottom:10}}>
+                        <LocaleProvider locale={zh_CN}>
+                            <RangePicker value={state.depositParams.createTimeStart ? [moment(state.depositParams.createTimeStart, 'YYYY/MM/DD'),moment(state.depositParams.createTimeEnd, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
+                                // state.toolbarParams.createTimeStart = dateString[0];
+                                // state.toolbarParams.createTimeEnd = dateString[1];
+                                update('set',addons(state,{
+                                    depositParams:{
+                                        createTimeStart:{
+                                            $set:dateString[0]
+                                        },
+                                        createTimeEnd:{
+                                            $set:dateString[1]
+                                        }    
+                                    }
+                                }))
+                                // _this.initIndex();
+                            }} />
+                        </LocaleProvider>
+                        <Button style={{marginLeft:10}} onClick={()=>{
+                            _this.initDeposit();
+                        }} type="primary">查询</Button>
+                    </div>
+                    <Table rowKey={record=>record.id} pagination={state.depositTable.pagination}
+                    columns={state.depositTable.head} dataSource={state.depositTable.data} />
                 </Modal>
+                
                 <Modal title="用户信息"
                   width = '680px'
                   visible={state.Modal.visUser}
@@ -1084,7 +1128,6 @@ class component extends Component{
                     </Form.Item>
                     <Form.Item {...formItemLayout} label='地区选择'>
                         <Cascader data={state.form} onChange={(data)=>{
-                            console.log(data)
                             update('set',addons(state,{
                                 form:{
                                     pro:{$set:data.pro},

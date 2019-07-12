@@ -76,12 +76,17 @@ class component extends Component{
                                         userId:record.id
                                     },
                                     success:(data)=>{
+                                        let areaValue = [];
+                                        record.codes.map((el)=>{
+                                            if(el.status == 0) return areaValue.push(el.code)
+                                        })
+                                        console.log(areaValue)
                                         _this.update('set',addons(_this.state,{
                                             Modal:{visAreaList:{$set:true}},
                                             record:{$set:record},
                                             areaTreeData:{$set:data},
                                             area:{
-                                                value:{$set:record.codes}
+                                                value:{$set:areaValue}
                                             }
                                         }))
                                     }
@@ -188,16 +193,16 @@ class component extends Component{
             if (item.children) {
                 return (
                     <TreeNode  
-                        title={['',item.provinceName,item.cityName,item.areaName,item.street][item.type]} 
-                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode][item.type]} 
+                        title={['',item.provinceName,item.cityName,item.areaName,item.street,item.communityName][item.type]} 
+                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type]} 
                         dataRef={item}>
                         {this.renderTreeNodes(item.children)}
                     </TreeNode>
                 );
             }
             return <TreeNode 
-                        title={['',item.provinceName,item.cityName,item.areaName,item.street][item.type]} 
-                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode][item.type]}
+                        title={['',item.provinceName,item.cityName,item.areaName,item.street,item.communityName][item.type]} 
+                        key={['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type]}
             {...item} />;
         })
     }
@@ -206,7 +211,7 @@ class component extends Component{
         const fn = (data)=>{
             for(let i=0;i<data.length;i++){
                 let item = data[i];
-                if(['',item.provinceCode,item.cityCode,item.areaCode,item.areaCode][item.type] == key){
+                if(['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type] == key){
                     item.children = children;
                     return;
                 }
@@ -214,6 +219,20 @@ class component extends Component{
             }
         }
         fn(this.state.areaTreeData);
+    }
+    // 通过key去找节点
+    getKeysByNodes(keys,nodes){
+        let arr = [];
+        const fn = (data)=>{
+            data.forEach((item)=>{
+                if(keys.indexOf(['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type]) !=-1){
+                    arr.push(item)
+                }
+                if(item.children) fn(item.children);
+            })
+        }
+        fn(nodes);
+        return arr;
     }
     render(){
         const _this = this;
@@ -380,6 +399,18 @@ class component extends Component{
                                         update('set',addons(state,{}));
                                     }
                                 })
+                            }else if(info.node.props.type==4){
+                                Ajax.get({
+                                    url:config.Addres.urls.userCommunityListByCode,
+                                    params:{
+                                        code:selectedKeys[0]
+                                    },
+                                    success:(data)=>{
+                                        console.log(selectedKeys[0], data)
+                                        _this.insertChildrenToTree(selectedKeys[0], data);
+                                        update('set',addons(state,{}));
+                                    }
+                                })
                             }
                         }}
                         onCheck={(checkedKeys,info)=>{
@@ -387,16 +418,31 @@ class component extends Component{
                             info.checkedNodes.forEach((item)=>{
                                 const type = item.props.type || item.props.dataRef.type;
                                 const code = item.key;
-                                const ids = item.props.dataRef ? ['',item.props.dataRef.provinceId,item.props.dataRef.cityId,item.props.dataRef.areaId,item.props.dataRef.streetId] : ['',item.props.provinceId,item.props.cityId,item.props.areaId,item.props.streetId];
+                                const ids = item.props.dataRef ? 
+                                    ['',item.props.dataRef.provinceId,item.props.dataRef.cityId,item.props.dataRef.areaId,item.props.dataRef.streetId,item.props.dataRef.communityId] : 
+                                    ['',item.props.provinceId,item.props.cityId,item.props.areaId,item.props.streetId,item.props.communityId];
                                 address.push({
+                                    status:0,
                                     type:type,
                                     code:code,
                                     id:ids[type]
                                 })
                             })
+                            
+                            // info.halfCheckedKeys
+                            _this.getKeysByNodes(info.halfCheckedKeys,state.areaTreeData).forEach((item)=>{
+                                address.push({
+                                    status:1,
+                                    type:item.type,
+                                    code:['',item.provinceCode,item.cityCode,item.areaCode,item.streetCode,item.communityCode][item.type],
+                                    id:['',item.provinceId,item.cityId,item.areaId,item.streetId,item.communityId][item.type]
+                                })
+                            })
+
                             update('set',addons(state,{
                                 area:{
                                     value:{$set:checkedKeys},
+                                    halfValue:{$set:info.halfCheckedKeys},
                                     address:{$set:address}
                                 }
                             }))

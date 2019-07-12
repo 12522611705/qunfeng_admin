@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, Modal, message } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table,
+    Divider, Tag, DatePicker, Modal, message } from 'antd';
+
+import moment from 'moment';
 
 // router
 // import { Link } from 'react-router-dom';
@@ -46,6 +49,7 @@ class component extends Component{
             },
             // 表格数据
             indexTable:{
+                selectedRowKeys:[],
                 pagination:{
                     current:1,
                     total:0,
@@ -58,18 +62,13 @@ class component extends Component{
                 head:[
                     { title: 'ID', dataIndex: 'id', key: 'id'}, 
                     { title: '车牌号', dataIndex: 'carNumber', key: 'carNumber'}, 
-                    { title: 'imei号', dataIndex: 'imei', key: 'imei'}, 
-                    { title: '环卫车类型', dataIndex: 'type', key: 'type'}, 
-                    { title: '是否在工作中', dataIndex: 'isWord', key: 'isWord', render:(text)=>(
-                        ['','是','否'][text]
-                    )},
-                    { title: '是否行驶中', dataIndex: 'isAuto', key: 'isAuto', render:(text)=>(
-                        ['','是','否'][text]
-                    )},
-                    { title: 'GPS是否在线', dataIndex: 'gps', key: 'gps', render:(text)=>(
-                        ['','是','否'][text]
-                    )},
-                    { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
+                    { title: '辖区管理部门', dataIndex: 'department', key: 'department'}, 
+                    { title: '权属单位', dataIndex: 'companyName', key: 'companyName'}, 
+                    { title: '车量类型', dataIndex: 'type', key: 'type', render:(text,record)=>(
+                        ['','可回收物','有害垃圾','其它垃圾','餐厨垃圾'][text]
+                    )}, 
+                    { title: '车辆管理员', dataIndex: 'adminName', key: 'adminName'}, 
+                    { title: 'GPS实施状态', dataIndex: 'gps', key: 'gps', render:(text,record)=>(
                         <span>
                             {_this.state.permission.details?
                             <a href="javascript:;" onClick={()=>{
@@ -102,11 +101,9 @@ class component extends Component{
                                                 <div>
                                                     <p>车牌号：${data.carNumber}</p>
                                                     <p>车类型：${data.type||''}</p>
-                                                    <p>所属单位：${data.companyName}</p>
+                                                    <p>市辖区管理部：${data.companyName}</p>
                                                     <p>今日收集垃圾量：${data.sumWeight||''}</p>
                                                     <p>实时位置：${addComp.street}</p>
-                                                    <p>实时速度：${data.speed}</p>
-                                                    <p>时间：：${data.time}</p>
                                                 </div>
                                             `,{offset:new BMap.Size(20,-10)});
                                             label.setStyle({
@@ -131,7 +128,10 @@ class component extends Component{
                                     }
                                 })
                             }}>环卫车状态</a>:'--'}
-                            <Divider type="vertical" />
+                        </span>
+                    )},
+                    { title: '更多信息', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
+                        <span>
                             <a href="javascript:;" onClick={()=>{
                                 Modal.info({
                                     title: '更多信息',
@@ -149,98 +149,37 @@ class component extends Component{
                                         <Form.Item {...formItemLayout} label='街道'>
                                             {record.street||'--'}
                                         </Form.Item>
-                                        <Form.Item {...formItemLayout} label='所属单位'>
-                                            {record.companyName||'--'}
+                                        <Form.Item {...formItemLayout} label='社区'>
+                                            {record.community||'--'}
                                         </Form.Item>
-                                        <Form.Item {...formItemLayout} label='车辆管理员'>
-                                            {record.adminRole||'--'}
+                                        <Form.Item {...formItemLayout} label='详细地址'>
+                                            {record.address||'--'}
                                         </Form.Item>
-                                        <Form.Item {...formItemLayout} label='联系电话'>
+                                        <Form.Item {...formItemLayout} label='电话'>
                                             {record.tel||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='IMEI号'>
+                                            {record.imei||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='工作参数'>
+                                            {record.isWord||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='车辆上户时间'>
+                                            {record.bindingTime||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='车辆品牌'>
+                                            {record.brand||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='燃油类型'>
+                                            {['','汽油','柴油','电动'][record.fuelType]||'--'}
+                                        </Form.Item>
+                                        <Form.Item {...formItemLayout} label='备注'>
+                                            {record.remark||'--'}
                                         </Form.Item>
                                       </div>
                                     ),
                                 });
                             }}>查看更多</a>
-                            <Divider type="vertical" />
-                            {
-                                _this.state.permission.update ?
-                                <a href="javascript:;" onClick={()=>{
-                                    this.update('set',addons(this.state,{
-                                        Modal:{
-                                            visRecord:{
-                                                $set:true
-                                            }
-                                        },
-                                        recordType:{
-                                            $set:'update'
-                                        },
-                                        record:{
-                                            $set:record
-                                        },
-                                        newRecord:{
-                                            adminRole:{
-                                                $set:record.adminRole
-                                            },
-                                            tel:{
-                                                $set:record.tel
-                                            },
-                                            carName:{
-                                                $set:record.carName
-                                            },
-                                            // driverName:{
-                                            //     $set:record.driverName
-                                            // },
-                                            carNumber:{
-                                                $set:record.carNumber
-                                            },
-                                            imei:{
-                                                $set:record.imei
-                                            },
-                                            type:{
-                                                $set:record.type
-                                            },
-                                            pro:{
-                                                $set:record.pro
-                                            },
-                                            city:{
-                                                $set:record.city
-                                            },
-                                            area:{
-                                                $set:record.area
-                                            },
-                                            isWord:{
-                                                $set:String(record.isWord)
-                                            },
-                                        }
-                                    }))
-                                }}>修改</a>:''
-                            }
-                            <Divider type="vertical" />
-                            {
-                                _this.state.permission.delete ?
-                                <a href="javascript:;" onClick={()=>{
-                                    Modal.confirm({
-                                        title:'提示',
-                                        content:'你确定要删除吗？',
-                                        okText:'确定',
-                                        cancelText:'取消',
-                                        onOk(){
-                                            Ajax.post({
-                                                url:config.SanitationCarAdmin.urls.delete,
-                                                params:{
-                                                    carId:record.id
-                                                },
-                                                success:(data)=>{
-                                                    _this.initIndex();
-                                                }
-                                            })
-                                        }
-                                    })
-                                   
-                                }}>删除</a>:''    
-                            }
-                            
                         </span>
                     )},
                 ],
@@ -328,6 +267,8 @@ class component extends Component{
                     area:params.area||'',
                     street:params.street||'',
                     tel:params.tel||'',
+                    companyName:params.companyName||'',
+                    department:params.department||'',
                     adminRole:params.adminRole||'',
                     type:params.type||'',
                 },
@@ -404,52 +345,6 @@ class component extends Component{
                     <Breadcrumb.Item>环卫车管理</Breadcrumb.Item>
                     <Breadcrumb.Item><a href="javascript:;">环卫车列表</a></Breadcrumb.Item>
                 </Breadcrumb>
-                {
-                    state.permission.add ?
-                    <div className="main-toolbar">
-                        <Button type="primary" onClick={()=>{
-                            update('set',addons(state,{
-                                Modal:{
-                                    visRecord:{
-                                        $set:true
-                                    }
-                                },
-                                recordType:{
-                                    $set:'add'
-                                },
-                                newRecord:{
-                                    carName:{
-                                        $set:''
-                                    },
-                                    // driverName:{
-                                    //     $set:''
-                                    // },
-                                    carNumber:{
-                                        $set:''
-                                    },
-                                    imei:{
-                                        $set:''
-                                    },
-                                    type:{
-                                        $set:''
-                                    },
-                                    pro:{
-                                        $set:''
-                                    },
-                                    city:{
-                                        $set:''
-                                    },
-                                    area:{
-                                        $set:''
-                                    },
-                                    isWord:{
-                                        $set:''
-                                    },
-                                }
-                            }))
-                        }}>添加环卫车</Button>
-                    </div>:''    
-                }
                 
                 <div className="main-toolbar">
                     
@@ -495,6 +390,33 @@ class component extends Component{
                         <Select.Option value="5">司机</Select.Option>
                         <Select.Option value="6">公司人员</Select.Option>
                     </Select>
+                </div>
+
+                <div className="main-toolbar">
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                department:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.department} 
+                    placeholder="请输入市辖区管理部门"
+                    addonBefore={<span>市辖区管理部门</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }} />
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                companyName:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.companyName} 
+                    placeholder="请输入授权单位"
+                    addonBefore={<span>授权单位</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }} />
                 </div>
                 <div className="main-toolbar">
                     <Input onChange={(e)=>{
@@ -546,6 +468,8 @@ class component extends Component{
                             // driverName:params.driverName||'',
                             carNumber:'',
                             imei:'',
+                            companyName:'',//权属单位
+                            department:'',//市辖区管理部门
                             pro:'',
                             city:'',
                             area:'',
@@ -561,6 +485,8 @@ class component extends Component{
                                 carName:{$set:''},//查询字段
                                 carNumber:{$set:''},//性别
                                 imei:{$set:''},//用户ick号
+                                companyName:{$set:''},//权属单位
+                                department:{$set:''},//市辖区管理部门
                                 pro:{$set:''},//省
                                 city:{$set:''},//市
                                 area:{$set:''},//市
@@ -571,14 +497,110 @@ class component extends Component{
                             }
                         })
                     }}>重置</Button>
+                    {
+                        state.permission.add ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            _this.state.Modal.visRecord = true;
+                            _this.state.recordType = 'add';
+                            _this.state.newRecord = {
+                                address:'',
+                                adminName:'',
+                                area:'',
+                                bindingTime:'',
+                                brand:'',
+                                carNumber:'',
+                                city:'',
+                                community:'',
+                                companyName:'',
+                                department:'',
+                                fuelType:'',
+                                imei:'',
+                                lat:'',
+                                lon:'',
+                                pro:'',
+                                remark:'',
+                                street:'',
+                                tel:'',
+                                type:'',
+                                weight:''
+                            }
+                            _this.setState({});
+                        }}>增加</Button>:''
+                    }
+                    {
+                        _this.state.permission.update ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                            let record = {};
+                            _this.state.indexTable.data.forEach((el)=>{
+                                if(el.id == _this.state.indexTable.selectedRowKeys[0]){
+                                    record = el;
+                                }
+                            })
+                            _this.state.Modal.visRecord = true;
+                            _this.state.recordType = 'update';
+                            _this.state.record = record;
+                            _this.state.newRecord = {
+                                address:record.address,
+                                adminName:record.adminName,
+                                area:record.area,
+                                bindingTime:record.bindingTime,
+                                brand:record.brand,
+                                carNumber:record.carNumber,
+                                city:record.city,
+                                community:record.community,
+                                companyName:record.companyName,
+                                department:record.department,
+                                fuelType:record.fuelType,
+                                imei:record.imei,
+                                lat:record.lat,
+                                lon:record.lon,
+                                pro:record.pro,
+                                remark:record.remark,
+                                street:record.street,
+                                tel:record.tel,
+                                type:record.type,
+                                weight:record.weight
+                            }
+                            _this.setState({});
+                        }}>修改</Button>:''
+                    }
+                    
 
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
-
-                    <Button type="primary" onClick={()=>{
+                    {
+                        _this.state.permission.delete ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            
+                            Modal.confirm({
+                                title:'提示',
+                                content:'你确定要删除吗？',
+                                okText:'确定',
+                                cancelText:'取消',
+                                onOk(){
+                                    Ajax.post({
+                                        url:config.SanitationCarAdmin.urls.delete,
+                                        params:{
+                                            carId:_this.state.indexTable.selectedRowKeys
+                                        },
+                                        success:(data)=>{
+                                            _this.initIndex();
+                                        }
+                                    })
+                                }
+                            })
+                        }}>删除</Button>:''    
+                    }
+                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         window.open(config.SanitationCarAdmin.urls.sanitationCarExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
+
+                    <Button type="primary" onClick={()=>{
+
+                    }}>数据导入</Button>
                 </div>
                 <Modal title={state.recordType=='add'?'添加环卫车':'修改环卫车记录'}
                    onOk={()=>{
@@ -593,22 +615,8 @@ class component extends Component{
                         Ajax.post({
                             url,
                             params:{
-                                number:0,
-                                maxWeight:1,
-                                carName:state.newRecord.carName,
-                                // driverName:{
-                                //     $set:record.driverName
-                                // },
-                                carNumber:state.newRecord.carNumber,
-                                imei:state.newRecord.imei,
-                                adminRole:state.newRecord.adminRole,
-                                tel:state.newRecord.tel,
-                                type:state.newRecord.type,
-                                pro:state.newRecord.pro,
-                                city:state.newRecord.city,
-                                area:state.newRecord.area,
-                                street:state.newRecord.street,
-                                isWord:state.newRecord.isWord,
+                                ...state.newRecord,
+                                bindingTime:new Date(state.newRecord.bindingTime).getTime(),
                                 id:state.recordType=='update'?state.record.id:''
                             },
                             success:(data)=>{
@@ -627,26 +635,87 @@ class component extends Component{
                             _this.updateNewRecord('carName',e.target.value);
                         }} value={state.newRecord.carName}/>
                     </Form.Item>
-                    {/*
-                    <Form.Item {...formItemLayout} label="司机名" >
-                        <Input placeholder="请输入司机名" onChange={(e)=>{
-                            _this.updateNewRecord('driverName',e.target.value);
-                        }} value={state.newRecord.driverName}/>
-                    </Form.Item>*/}
+                   
+                    <Form.Item {...formItemLayout} label="详细地址" >
+                        <Input placeholder="请输入详细地址" onChange={(e)=>{
+                            _this.updateNewRecord('address',e.target.value);
+                        }} value={state.newRecord.address}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="车辆管理员" >
+                        <Input placeholder="请输入车辆管理员" onChange={(e)=>{
+                            _this.updateNewRecord('adminName',e.target.value);
+                        }} value={state.newRecord.adminName}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="上户时间" >
+                        <DatePicker value={state.newRecord.bindingTime ? moment(state.newRecord.bindingTime, 'YYYY/MM/DD') : null} 
+                            onChange={(date, dateString)=>{
+                                console.log(dateString)
+                            _this.updateNewRecord('bindingTime',dateString);
+                        }} />
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="车辆品牌" >
+                        <Input placeholder="请输入车辆品牌" onChange={(e)=>{
+                            _this.updateNewRecord('brand',e.target.value);
+                        }} value={state.newRecord.brand}/>
+                    </Form.Item>
                     <Form.Item {...formItemLayout} label="车牌号" >
                         <Input placeholder="请输入车牌号" onChange={(e)=>{
                             _this.updateNewRecord('carNumber',e.target.value);
                         }} value={state.newRecord.carNumber}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label="imei" >
-                        <Input placeholder="请输入emei" onChange={(e)=>{
+                    <Form.Item {...formItemLayout} label="权属单位" >
+                        <Input placeholder="请输入权属单位" onChange={(e)=>{
+                            _this.updateNewRecord('companyName',e.target.value);
+                        }} value={state.newRecord.companyName}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="辖区管理部门" >
+                        <Input placeholder="请输入辖区管理部门" onChange={(e)=>{
+                            _this.updateNewRecord('department',e.target.value);
+                        }} value={state.newRecord.department}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="柴油类型" >
+                        <Select value={state.newRecord.fuelType} onChange={(value)=>{
+                             _this.updateNewRecord('fuelType',value);
+                        }} style={{ width: 120, marginRight:10 }}>
+                            <Select.Option value="1">汽油</Select.Option>
+                            <Select.Option value="2">柴油</Select.Option>
+                            <Select.Option value="3">电动</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="imei号" >
+                        <Input placeholder="请输入imei号" onChange={(e)=>{
                             _this.updateNewRecord('imei',e.target.value);
                         }} value={state.newRecord.imei}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label="车辆管理员" >
-                        <Input placeholder="请输入车辆管理员姓名" onChange={(e)=>{
-                            _this.updateNewRecord('adminRole',e.target.value);
-                        }} value={state.newRecord.adminRole}/>
+                    <Form.Item {...formItemLayout} label="经度" >
+                        <Input placeholder="请输入经度" onChange={(e)=>{
+                            _this.updateNewRecord('lat',e.target.value);
+                        }} value={state.newRecord.lat}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="纬度" >
+                        <Input placeholder="请输入纬度" onChange={(e)=>{
+                            _this.updateNewRecord('lon',e.target.value);
+                        }} value={state.newRecord.lon}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="备注" >
+                        <Input placeholder="请输入备注" onChange={(e)=>{
+                            _this.updateNewRecord('remark',e.target.value);
+                        }} value={state.newRecord.remark}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="环卫车类型" >
+                       <Select value={state.newRecord.type} onChange={(value)=>{
+                             _this.updateNewRecord('type',value);
+                        }} style={{ width: 120, marginRight:10 }}>
+                            <Select.Option value="1">可回收物</Select.Option>
+                            <Select.Option value="2">有害垃圾</Select.Option>
+                            <Select.Option value="3">其它垃圾</Select.Option>
+                            <Select.Option value="4">餐厨垃圾</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label="垃圾重量" >
+                        <Input placeholder="请输入垃圾重量" onChange={(e)=>{
+                            _this.updateNewRecord('weight',e.target.value);
+                        }} value={state.newRecord.weight}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="联系电话" >
                         <Input placeholder="请输入联系电话" onChange={(e)=>{
@@ -692,7 +761,15 @@ class component extends Component{
                    visible={state.Modal.visBmap}>
                     <div style={{height:"400px"}} id={"allmap"}></div>
                 </Modal>
-                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination} 
+                <Table 
+                    rowSelection={{
+                        selectedRowKeys:state.indexTable.selectedRowKeys,
+                        onChange:(selectedRowKeys)=>{
+                            state.indexTable.selectedRowKeys = selectedRowKeys;
+                            _this.setState({});
+                        }
+                    }}
+                    rowKey={record=>record.id} pagination={state.indexTable.pagination} 
                     columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <div style={{marginTop:-42,textAlign:'right'}}>
                     <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
