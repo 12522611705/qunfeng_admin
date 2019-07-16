@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table,
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Upload, 
     Divider, Tag, DatePicker, Modal, message } from 'antd';
 
 import moment from 'moment';
@@ -127,7 +127,7 @@ class component extends Component{
                                         //map.enableScrollWheelZoom(true);     开启鼠标滚轮缩放
                                     }
                                 })
-                            }}>环卫车状态</a>:'--'}
+                            }}>点击查看</a>:'--'}
                         </span>
                     )},
                     { title: '更多信息', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
@@ -574,7 +574,8 @@ class component extends Component{
                     {
                         _this.state.permission.delete ?
                         <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                            
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行删除');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行删除');
                             Modal.confirm({
                                 title:'提示',
                                 content:'你确定要删除吗？',
@@ -597,10 +598,18 @@ class component extends Component{
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         window.open(config.SanitationCarAdmin.urls.sanitationCarExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
-
-                    <Button type="primary" onClick={()=>{
-
-                    }}>数据导入</Button>
+                    <Upload name="file" 
+                        style={{display:'inline'}}
+                        fileList={[]}
+                        headers={{ 
+                            token:localStorage.getItem('token')
+                        }}
+                        action="http://118.190.145.65:8888/flockpeak-shop//admin/sanitationCarAdmin/importExcelSation" 
+                        onChange={(info)=>{
+                            _this.initIndex();
+                        }}>
+                        <Button style={{marginRight:10}} type="primary">数据导入</Button>
+                    </Upload>
                 </div>
                 <Modal title={state.recordType=='add'?'添加环卫车':'修改环卫车记录'}
                    onOk={()=>{
