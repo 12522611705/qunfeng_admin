@@ -352,7 +352,7 @@ class component extends Component{
             url:config.JurisdictionAdmin.urls.list,
             params:{
                 type:3,
-                fatherMenuId:search.id
+                fatherMenuId:search.id||''
             },
             success:(data)=>{
                 data.forEach((el)=>{

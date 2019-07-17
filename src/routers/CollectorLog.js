@@ -44,6 +44,15 @@ class component extends Component{
         this.state = {
             Modal:{
                visBmap:false,
+               visColle:false
+            },
+            permission:{
+                list:false,
+                exportCollectorLogExce:false,
+                importingCollectorLog:false,
+                updataCollectorLog:false,
+                deteleCollectorLog:false,
+                addCollectorLog:false,
             },
             record:{},
             // 工具条查询参数
@@ -64,6 +73,24 @@ class component extends Component{
                 type:'',//环卫车类型查询
                 companyName:'',//物业公司
                 userName:'',//操作人名字
+            },
+            form:{
+                address:'',
+                imei:'',
+                rubbishType:'',
+                barrelage:'',
+                tel:'',
+                pro:'',
+                city:'',
+                area:'',
+                street:'',
+                carNumber:'',
+                companyName:'',
+                bindingTime:'',
+                department:'',
+                laterWeight:'',
+                plotName:'',
+                weight:'',
             },
             // 表格数据
             indexTable:{
@@ -212,7 +239,7 @@ class component extends Component{
             },
             success:(data)=>{
                 data.forEach((el)=>{
-                    // _this.state.permission[config.Card.permission[el.url]] = true;
+                    _this.state.permission[config.CollectorLog.permission[el.url]] = true;
                 })
                 console.log(_this.state.permission)
                 _this.setState({});
@@ -222,7 +249,7 @@ class component extends Component{
     /*
      *  初始化页面数据
      */
-    initIndex(){
+    initIndex(updateParams){
         const _this = this;
         const params = _this.state.toolbarParams;
         Ajax.get({
@@ -250,16 +277,59 @@ class component extends Component{
                                 $set:_this.state.indexTable.pagination.current
                             }
                         }
-                    }
+                    },
+                    ...updateParams
                 }))
             }
         })
+    }
+    colle(){
+        const _this = this;
+        let url = '';
+        let postData = {};
+        if(_this.state.type=='add'){
+            url = config.CollectorLog.urls.addCollectorLog;
+            postData={
+                ..._this.state.form,
+            }
+        }else if(_this.state.type=='update'){
+            url = config.CollectorLog.urls.updataCollectorLog;
+            postData={
+                ..._this.state.form,
+                id:_this.state.indexTable.selectedRowKeys[0]
+            }
+        }
+        if(!/^1\d{10}$/.test(_this.state.form.tel)) return message.info('请输入正确的手机号码');
+        Ajax.post({
+            url,
+            params:postData,
+            success:(data)=>{
+                _this.initIndex({
+                    Modal:{
+                        visColle:{$set:false}
+                    }
+                })
+            }
+        })
+    }
+    updateForm(value,key){
+        this.state.form[key] = value;
+        this.setState({})
     }
     render(){
         const _this = this;
         const state = _this.state;
         const update = _this.update;
-       
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 6 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 16 },
+          },
+        };
         return (
             <div className="content">
                 <Breadcrumb>
@@ -371,53 +441,96 @@ class component extends Component{
                     </LocaleProvider>
                 </div>
                 <div className="main-toolbar">
-                    
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>增加</Button>
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        _this.initIndex();
-                    }}>修改</Button>
+                    {
+                        state.permission.addCollectorLog?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            _this.state.Modal.visColle = true;
+                            _this.state.type = 'add';
+                            _this.setState({});
+                        }}>增加</Button>:''    
+                    }
+                    {
+                        state.permission.updataCollectorLog?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                            _this.state.Modal.visColle = true;
+                            _this.state.type = 'update';
+                            let record = {};
+                            _this.state.indexTable.data.forEach((el)=>{
+                                if(el.id == _this.state.indexTable.selectedRowKeys[0]){
+                                    record = el;
+                                }
+                            })
+                            _this.state.form = {
+                                address:record.address,
+                                imei:record.imei,
+                                rubbishType:record.rubbishType,
+                                barrelage:record.barrelage,
+                                tel:record.tel,
+                                pro:record.pro,
+                                city:record.city,
+                                area:record.area,
+                                street:record.street,
+                                carNumber:record.carNumber,
+                                companyName:record.companyName,
+                                bindingTime:record.bindingTime,
+                                department:record.department,
+                                laterWeight:record.laterWeight,
+                                plotName:record.plotName,
+                                weight:record.weight,
+                            }
+                            _this.setState({});
+                        }}>修改</Button>:''    
+                    }
 
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
                         _this.initIndex();
                     }}>查询</Button>
+                    {
+                        state.permission.deteleCollectorLog?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行删除');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行删除');
+                            Modal.confirm({
+                                title:'提示',
+                                content:'你确定要删除吗？',
+                                okText:'确定',
+                                cancelText:'取消',
+                                onOk(){
+                                    Ajax.post({
+                                        url:config.CollectorLog.urls.deteleCollectorLog,
+                                        params:{
+                                            ids:_this.state.indexTable.selectedRowKeys
+                                        },
+                                        success:(data)=>{
+                                            _this.initIndex();
+                                        }
+                                    })
+                                }
+                            })
+                        }}>删除</Button>:''    
+                    }
+                    
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行删除');
-                        if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行删除');
-                        Modal.confirm({
-                            title:'提示',
-                            content:'你确定要删除吗？',
-                            okText:'确定',
-                            cancelText:'取消',
-                            onOk(){
-                                Ajax.post({
-                                    url:config.SanitationCarAdmin.urls.delete,
-                                    params:{
-                                        carId:_this.state.indexTable.selectedRowKeys
-                                    },
-                                    success:(data)=>{
-                                        _this.initIndex();
-                                    }
-                                })
-                            }
-                        })
-                    }}>删除</Button>
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        window.open(config.SanitationCarAdmin.urls.sanitationCarExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                        window.open(config.CollectorLog.urls.exportNotificationExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
-                    <Upload name="file" 
-                        style={{display:'inline'}}
-                        fileList={[]}
-                        headers={{ 
-                            token:localStorage.getItem('token')
-                        }}
-                        action="http://118.190.145.65:8888/flockpeak-shop//admin/sanitationCarAdmin/importExcelSation" 
-                        onChange={(info)=>{
-                            _this.initIndex();
-                        }}>
-                        <Button style={{marginRight:10}} type="primary">数据导入</Button>
-                    </Upload>
+                    {
+                        state.permission.importingCollectorLog ?
+                        <Upload name="file" 
+                            style={{display:'inline'}}
+                            fileList={[]}
+                            headers={{ 
+                                token:localStorage.getItem('token')
+                            }}
+                            action="http://118.190.145.65:8888/flockpeak-shop//admin/sanitationCarAdmin/importExcelSation" 
+                            onChange={(info)=>{
+                                _this.initIndex();
+                            }}>
+                            <Button style={{marginRight:10}} type="primary">数据导入</Button>
+                        </Upload>:''    
+                    }
+                    
                 </div>
                 
                 <Table rowKey={record=>record.id} pagination={state.indexTable.pagination} 
@@ -445,6 +558,100 @@ class component extends Component{
                    cancelText="取消"
                    visible={state.Modal.visBmap}>
                     <div style={{height:"400px"}} id={"allmap"}></div>
+                </Modal>
+                <Modal title="收运信息"
+                  width = '680px'
+                  visible={state.Modal.visColle}
+                  onOk={_this.colle.bind(_this)}
+                  onCancel={()=>{
+                    update('set',addons(state,{
+                        Modal:{visColle:{$set:false}}
+                    }))
+                  }}
+                >
+                    <Form.Item {...formItemLayout} label='详细地址'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'address')
+                        }} type="text" value={state.form.address}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='IMEI号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'imei')
+                        }} type="text" value={state.form.imei}/>
+                    </Form.Item>
+                    
+                    <Form.Item {...formItemLayout} label='垃圾类别'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'rubbishType')
+                        }} style={{width:200}} value={state.form.rubbishType}>
+                            <Select.Option value="">全部</Select.Option>
+                            <Select.Option value="1">可回收物</Select.Option>
+                            <Select.Option value="2">有害垃圾</Select.Option>
+                            <Select.Option value="3">其它垃圾</Select.Option>
+                            <Select.Option value="4">餐厨垃圾</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    
+                    <Form.Item {...formItemLayout} label='小区桶数'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'barrelage')
+                        }} type="text" value={state.form.barrelage}/>
+                    </Form.Item>
+                    
+                    <Form.Item {...formItemLayout} label='联系电话'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'tel')
+                        }} type="text" value={state.form.tel}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='地区选择'>
+                        <Cascader data={state.form} onChange={(data)=>{
+                            update('set',addons(state,{
+                                form:{
+                                    pro:{$set:data.pro},
+                                    city:{$set:data.city},
+                                    area:{$set:data.area},
+                                    street:{$set:data.street}
+                                }
+                            }))
+                        }}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='车牌号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'carNumber')
+                        }} type="text" value={state.form.carNumber}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='物业公司'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'companyName')
+                        }} type="text" value={state.form.companyName}/>
+                    </Form.Item>
+
+                    <Form.Item {...formItemLayout} label='时间'>
+                        <DatePicker value={state.form.creationTime ? moment(state.form.creationTime, 'YYYY/MM/DD') : null} 
+                            onChange={(date, dateString)=>{
+                            _this.updateForm(dateString,'creationTime');
+                        }} />
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='清运单位'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'department')
+                        }} type="text" value={state.form.department}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='总重量'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'laterWeight')
+                        }} type="text" value={state.form.laterWeight}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='小区名/单位名字 '>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'plotName')
+                        }} type="text" value={state.form.plotName}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='当前重量'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'weight')
+                        }} type="text" value={state.form.weight}/>
+                    </Form.Item>
                 </Modal>
             </div>
         );

@@ -108,7 +108,7 @@ class component extends Component{
         }))
     }
     // 增加社区
-    addComm(node,eve){
+    addComm(node,eve,oldType){
         eve.stopPropagation();
         const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][node.type-1];
         const type = node.type;
@@ -121,7 +121,7 @@ class component extends Component{
             },
             area:{
                 editorStatus:{$set:'add'},
-                type:{$set:type},
+                type:{$set:oldType && type},
                 text:{$set:''},
                 parentCode:{$set:parentCode}
             }
@@ -136,7 +136,10 @@ class component extends Component{
                     <TreeNode  
                         title={[['',item.provinceName,item.cityName,item.areaName,item.street,item.communityName][item.type],<span key="1" style={{position:'absolute',left:300}}>
                             <a onClick={_this.add.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加</a>
-                            <a onClick={_this.addComm.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加社区</a>
+                            {
+                                item.type == 4 ?
+                                <a onClick={_this.addComm.bind(_this,item,5)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加社区</a>:''
+                            }
                             <a onClick={_this.editor.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">编辑</a>
                             <a onClick={_this.del.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">删除</a>
                         </span>]} 
@@ -149,7 +152,10 @@ class component extends Component{
             return <TreeNode 
                         title={[['',item.provinceName,item.cityName,item.areaName,item.street,item.communityName][item.type],<span key="1" style={{position:'absolute',left:300}}>
                             <a onClick={_this.add.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加</a>
-                            <a onClick={_this.addComm.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加社区</a>
+                            {
+                                item.type == 4 ?
+                                <a onClick={_this.addComm.bind(_this,item,5)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">增加社区</a>:''
+                            }
                             <a onClick={_this.editor.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">编辑</a>
                             <a onClick={_this.del.bind(_this,item)} style={{color:'#1890ff',marginRight:10}} href="javascript:;">删除</a>
                         </span>]} 

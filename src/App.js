@@ -61,7 +61,8 @@ class component extends Component{
             menu:{
                 selectedKeys:['0-0']
             },
-            menuData:[]
+            menuData:[],
+            userinfo:{}
         }
         // 监听路由变化
         props.history.listen((location)=>{ 
@@ -92,6 +93,7 @@ class component extends Component{
             }
         }))
         _this.getMenuData();
+        _this.getUserInfo();
     }
     componentWillUnmount() {
         // 移除自定义事件
@@ -100,6 +102,27 @@ class component extends Component{
     }
     componentWillReceiveProps(nextProps) {
         
+    }
+    /**
+     * @desc   获取用户信息
+     * @date   2019-04-08
+     * @author luozhou
+     * @param  {Object} options 
+     */
+    getUserInfo(){
+        const _this = this;
+        if(!localStorage.getItem('token')) return;
+        Ajax.get({
+            url:config.urls.adminUserDetailsByToken,
+            params:{},
+            success:(data)=>{
+                _this.update('set',addons(_this.state,{
+                    userinfo:{
+                        $set:data
+                    }
+                }))
+            }
+        })
     }
      /**
      * @desc   获取菜单
@@ -208,7 +231,7 @@ class component extends Component{
                                     </Menu>
                                 }>
                                     <a className="ant-dropdown-link" href="javascript:;">
-                                        用户名 <Icon type="down" />
+                                        {state.userinfo.account || '用户名'} <Icon type="down" />
                                     </a>
                                 </Dropdown>
                                 

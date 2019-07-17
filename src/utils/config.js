@@ -1,7 +1,8 @@
 export const config = {
 	// 公用接口
 	urls:{
-		streetList:'http://118.190.145.65:8888/flockpeak-shop/atlasCenter/streetList'
+		streetList:'http://118.190.145.65:8888/flockpeak-shop/atlasCenter/streetList',
+		adminUserDetailsByToken:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserDetailsByToken'
 	},
 	// 用户列表
 	UserAdmin:{
@@ -108,8 +109,20 @@ export const config = {
 	CollectorLog:{
 		urls:{
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/list',
-			exportCollectorLogExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportCollectorLogExcel'
-
+			exportCollectorLogExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportCollectorLogExcel',
+			importingCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/importingCollectorLog',
+			updataCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/updataCollectorLog',
+			deteleCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/deteleCollectorLog',
+			addCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/addCollectorLog',
+			exportNotificationExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportNotificationExcel'
+		},
+		permission:{
+			'/flockpeak-shop/admin/collectorLog/list':'list',
+			'/flockpeak-shop/exportExcel/exportCollectorLogExce':'exportCollectorLogExce',
+			'/flockpeak-shop/admin/collectorLog/importingCollectorLog':'importingCollectorLog',
+			'/flockpeak-shop/admin/collectorLog/updataCollectorLog':'updataCollectorLog',
+			'/flockpeak-shop/admin/collectorLog/deteleCollectorLog':'deteleCollectorLog',
+			'/flockpeak-shop/admin/collectorLog/addCollectorLog':'addCollectorLog'
 		}
 	},
 	// 推文管理
