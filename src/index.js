@@ -28,6 +28,8 @@ import Feedback from './routers/Feedback';
 import Welcome from './routers/Welcome';
 // 区域管理
 import Addres from './routers/Addres';
+// 提现管理
+import Deposit from './routers/Deposit';
 
 
 ReactDOM.render((
@@ -47,6 +49,7 @@ ReactDOM.render((
 				<Route path="/Feedback"						component={Feedback}/>
 				<Route path="/Welcome"						component={Welcome}/>
 				<Route path="/Addres"						component={Addres}/>
+				<Route path="/Deposit"						component={Deposit}/>
 	
 
 			</App>

@@ -106,8 +106,8 @@ class component extends Component{
                 },
                 head:[
                     { title: 'ID', dataIndex: 'id', key: 'id'}, 
-                    { title: '车牌号码', dataIndex: 'carNumber', key: 'carNumber'}, 
-                    { title: '小区单位/名称', dataIndex: 'plotName', key: 'plotName'}, 
+                    { title: '车牌号', dataIndex: 'carNumber', key: 'carNumber'}, 
+                    { title: '小区/单位名称', dataIndex: 'plotName', key: 'plotName'}, 
                     { title: '小区桶数', dataIndex: 'barrelage', key: 'barrelage'}, 
                     { title: '垃圾类别', dataIndex: 'rubbishType', key: 'rubbishType', render:(text)=>(
                         ['','可回收垃圾','有害垃圾','其它垃圾','餐厨垃圾'][text]
@@ -334,7 +334,7 @@ class component extends Component{
             <div className="content">
                 <Breadcrumb>
                     <Breadcrumb.Item>环卫车管理</Breadcrumb.Item>
-                    <Breadcrumb.Item><a href="javascript:;">收运费记录</a></Breadcrumb.Item>
+                    <Breadcrumb.Item><a href="javascript:;">收运数据管理</a></Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="main-toolbar">
                     <Input onChange={(e)=>{
@@ -361,8 +361,10 @@ class component extends Component{
                         }))
                     }}>
                         <Select.Option value="">全部</Select.Option>
-                        <Select.Option value="1">餐厨垃圾环卫车</Select.Option>
-                        <Select.Option value="2">其他垃圾环卫车</Select.Option>
+                        <Select.Option value="4">餐厨垃圾</Select.Option>
+                        <Select.Option value="3">其它垃圾</Select.Option>
+                        <Select.Option value="2">有害垃圾</Select.Option>
+                        <Select.Option value="1">可回收垃圾</Select.Option>
                     </Select>
                 </div>
 
@@ -419,8 +421,8 @@ class component extends Component{
                             }
                         }))
                     }} value={state.toolbarParams.userName} 
-                    placeholder="请输入操作人姓名"
-                    addonBefore={<span>操作人</span>} 
+                    placeholder="请输入车辆管理员姓名"
+                    addonBefore={<span>车辆管理员</span>} 
                     style={{ width: 300, marginRight: 10, marginBottom:10 }}/>
                 </div>
                 <div className="main-toolbar">
@@ -513,7 +515,7 @@ class component extends Component{
                     }
                     
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        window.open(config.CollectorLog.urls.exportNotificationExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                        window.open(config.CollectorLog.urls.exportCollectorLogExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
                     {
                         state.permission.importingCollectorLog ?

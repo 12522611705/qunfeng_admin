@@ -155,24 +155,24 @@ class component extends Component{
                         ['','保洁员','物业公司','街道','城管局','公司员工'][text]
                     )}, 
                     { title: '所属物业公司', dataIndex: 'companyName', key: 'companyName' }, 
-                    { title: 'IC卡号码', dataIndex: 'ickNo', key: 'ickNo' }, 
+                    { title: '卡号', dataIndex: 'ickNo', key: 'ickNo' }, 
                     { title: '投放总重量Kg', dataIndex: 'throwIn', key: 'throwIn' }, 
-                    { title: '绿色贡献值', dataIndex: 'contribution', key: 'contribution' , render:(text,record)=>(
-                       <div>
-                        <p style={{textAlign:'center'}}>{text||0}</p>
-                        {
-                            _this.state.permission.userGradeLogList?
-                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
-                                _this.state.contributionParams.userId = record.id;
-                                _this.initContribution({
-                                    Modal:{
-                                        visContribution:{$set:true}
-                                    }
-                                })
-                            }} href="javascript:;">点击查看</a></p>:''
-                        }
-                       </div>
-                    ) }, 
+                    // { title: '绿色贡献值', dataIndex: 'contribution', key: 'contribution' , render:(text,record)=>(
+                    //    <div>
+                    //     <p style={{textAlign:'center'}}>{text||0}</p>
+                    //     {
+                    //         _this.state.permission.userGradeLogList?
+                    //         <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                    //             _this.state.contributionParams.userId = record.id;
+                    //             _this.initContribution({
+                    //                 Modal:{
+                    //                     visContribution:{$set:true}
+                    //                 }
+                    //             })
+                    //         }} href="javascript:;">点击查看</a></p>:''
+                    //     }
+                    //    </div>
+                    // ) }, 
                     { title: '环保金余额', dataIndex: 'integral', key: 'integral' , render:(text,record)=>(
                        <div>
                         <p style={{textAlign:'center'}}>{text||0}</p>
@@ -246,7 +246,7 @@ class component extends Component{
                                                 {data.age||'--'}
                                             </Form.Item>
                                             <Form.Item {...formItemLayout} label='用户来源'>
-                                                {data.source||'--'}
+                                                {['','微信','安卓','IOS','IC卡'][data.source]||'--'}
                                             </Form.Item>
                                             <Form.Item {...formItemLayout} label='注册时间'>
                                                 {data.createTime||'--'}
@@ -327,7 +327,7 @@ class component extends Component{
                     { title: '回收类别', dataIndex: 'typeName', key: 'typeName' }, 
                     { title: '重量（kg）', dataIndex: 'weight', key: 'weight' },
                     { title: '环保金', dataIndex: 'integral', key: 'integral' },
-                    { title: '绿色贡献值', dataIndex: 'green', key: 'green' }
+                    // { title: '绿色贡献值', dataIndex: 'green', key: 'green' }
                 ],
                 data:[]
             },
@@ -497,8 +497,8 @@ class component extends Component{
                     startTime:new Date(params.createTimeStart).getTime()||'',
                     endTime :new Date(params.createTimeEnd).getTime()||'',
                     userId:params.userId||'',
-                    pageSize:_this.state.integralTable.pagination.pageSize,
-                    page:_this.state.integralTable.pagination.current
+                    pageSize:_this.state.integralTable.pagination.pageSize || 10,
+                    page:_this.state.integralTable.pagination.current || 1
                 },
                 success:(data)=>{
                     _this.update('set',addons(_this.state,{
@@ -884,6 +884,24 @@ class component extends Component{
                         <Button style={{marginRight:10}} type="primary" onClick={()=>{
                             _this.state.Modal.visUser = true;
                             _this.state.type = 'add';
+                            _this.state.form = {
+                                ickNo:'',
+                                tel:'',
+                                password:'',
+                                source:'',
+                                pro:'',
+                                city:'',
+                                area:'',
+                                street:'',
+                                plot:'',
+                                companyName:'',
+                                type:'',
+                                room:'',
+                                sex:'',
+                                age:'',
+                                ridgepole:'',
+                                community:''
+                            }
                             _this.setState({});
                         }}>增加</Button>:''    
                     }
@@ -913,6 +931,8 @@ class component extends Component{
                                 companyName:record.companyName,
                                 type:record.type,
                                 room:record.room,
+                                sex:record.sex,
+                                age:record.age,
                                 ridgepole:record.ridgepole,
                                 community:record.community
                             }
@@ -1024,6 +1044,7 @@ class component extends Component{
                     columns={state.contributionTableDetail.head} dataSource={state.contributionTableDetail.data} />
                 </Modal>
                 <Modal title="环保金额"
+                  width={800}
                   visible={state.Modal.visIntegral}
                   onCancel={()=>{
                     update('set',addons(state,{
@@ -1057,6 +1078,7 @@ class component extends Component{
                     columns={state.integralTable.head} dataSource={state.integralTable.data} />
                 </Modal>
                 <Modal title="提现详情"
+                  width={800}
                   visible={state.Modal.visDeposit}
                   onCancel={()=>{
                     update('set',addons(state,{
@@ -1100,12 +1122,12 @@ class component extends Component{
                     }))
                   }}
                 >
-                    <Form.Item {...formItemLayout} label='ICK号'>
+                    <Form.Item {...formItemLayout} label='卡号'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'ickNo')
                         }} type="text" value={state.form.ickNo}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='用户手机号码'>
+                    <Form.Item {...formItemLayout} label='手机号码'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'tel')
                         }} type="text" value={state.form.tel}/>
@@ -1118,12 +1140,32 @@ class component extends Component{
                     <Form.Item {...formItemLayout} label='用户来源'>
                         <Select onChange={(value)=>{
                             _this.updateForm(value,'source')
-                        }} style={{width:200}} value={state.form.source}>
+                        }} style={{width:200}} value={String(state.form.source)}>
                             <Select.Option value="">全部</Select.Option>
                             <Select.Option value="1">H5</Select.Option>
                             <Select.Option value="2">安卓</Select.Option>
                             <Select.Option value="3">IOS</Select.Option>
                             <Select.Option value="4">ICK</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='年龄'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'source')
+                        }} style={{width:200}} value={String(state.form.source)}>
+                            <Select.Option value="">全部</Select.Option>
+                            <Select.Option value="1">20岁以下</Select.Option>
+                            <Select.Option value="2">20-30</Select.Option>
+                            <Select.Option value="3">30-40</Select.Option>
+                            <Select.Option value="4">40-50</Select.Option>
+                            <Select.Option value="5">50岁以上</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='性别'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'sex')
+                        }} style={{width:200}} value={String(state.form.sex)}>
+                            <Select.Option value="1">男</Select.Option>
+                            <Select.Option value="2">女</Select.Option>
                         </Select>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label='地区选择'>
@@ -1143,7 +1185,7 @@ class component extends Component{
                             _this.updateForm(e.target.value,'plot')
                         }} type="text" value={state.form.plot}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='公司或者物业名称'>
+                    <Form.Item {...formItemLayout} label='公司名称'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'companyName')
                         }} type="text" value={state.form.companyName}/>

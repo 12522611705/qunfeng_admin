@@ -166,7 +166,7 @@ class component extends Component{
                                 <div onClick={()=>{
                                     _this.initCity(el);
                                     _this.fn({
-                                        pro:el.provinceCode
+                                        pro:el.provinceName
                                     });
                                 }}>{el.provinceName}</div>
                             </Select.Option>
@@ -180,7 +180,7 @@ class component extends Component{
                                 <div onClick={()=>{
                                     _this.initArea(el);
                                     _this.fn({
-                                        city:el.cityCode
+                                        city:el.cityName
                                     });
                                 }}>{el.cityName}</div>
                             </Select.Option>
@@ -194,7 +194,7 @@ class component extends Component{
                                  <div onClick={()=>{
                                     _this.initStreet(el);
                                     _this.fn({
-                                        area:el.areaCode
+                                        area:el.areaName
                                     });
                                 }}>{el.areaName}</div>
                             </Select.Option>
@@ -208,7 +208,7 @@ class component extends Component{
                                  <div onClick={()=>{
                                     _this.initComm(el);
                                     _this.fn({
-                                        street:el.streetCode
+                                        street:el.streetName
                                     });
                                 }}>{el.streetName}</div>
                             </Select.Option>
@@ -221,7 +221,7 @@ class component extends Component{
                             return <Select.Option value={el.communityCode} key={index}>
                                  <div onClick={()=>{
                                     _this.fn({
-                                        comm:el.communityCode
+                                        comm:el.communityName
                                     });
                                     _this.setState({});
                                 }}>{el.communityName}</div>

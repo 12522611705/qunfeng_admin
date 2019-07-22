@@ -31,6 +31,7 @@ class component extends Component{
                 address:[],
                 type:'',
                 id:'',
+                halfValue:[],
                 editorStatus:'add',
                 parentCode:''
             },
@@ -108,7 +109,7 @@ class component extends Component{
         }))
     }
     // 增加社区
-    addComm(node,eve,oldType){
+    addComm(node,oldType,eve){
         eve.stopPropagation();
         const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][node.type-1];
         const type = node.type;
@@ -257,6 +258,7 @@ class component extends Component{
                         update('set',addons(state,{
                             area:{
                                 value:{$set:checkedKeys},
+                                halfValue:{$set:info.halfCheckedKeys},
                                 address:{$set:address}
                             }
                         }))

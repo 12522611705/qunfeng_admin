@@ -142,6 +142,7 @@ class component extends Component{
             areaTreeData:[],
             area:{
                 address:[],
+                halfValue:[],
                 value:[]
             }
         }

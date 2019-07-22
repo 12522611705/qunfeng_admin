@@ -45,7 +45,8 @@ class component extends Component{
                 add:false,
                 update:false,
                 list:false,
-                details:false
+                details:false,
+                details:flase
             },
             // 表格数据
             indexTable:{
@@ -64,11 +65,11 @@ class component extends Component{
                     { title: '车牌号', dataIndex: 'carNumber', key: 'carNumber'}, 
                     { title: '辖区管理部门', dataIndex: 'department', key: 'department'}, 
                     { title: '权属单位', dataIndex: 'companyName', key: 'companyName'}, 
-                    { title: '车量类型', dataIndex: 'type', key: 'type', render:(text,record)=>(
+                    { title: '环卫车类型', dataIndex: 'type', key: 'type', render:(text,record)=>(
                         ['','可回收物','有害垃圾','其它垃圾','餐厨垃圾'][text]
                     )}, 
                     { title: '车辆管理员', dataIndex: 'adminName', key: 'adminName'}, 
-                    { title: 'GPS实施状态', dataIndex: 'gps', key: 'gps', render:(text,record)=>(
+                    { title: 'GPS实时状态', dataIndex: 'gps', key: 'gps', render:(text,record)=>(
                         <span>
                             {_this.state.permission.details?
                             <a href="javascript:;" onClick={()=>{
@@ -101,7 +102,7 @@ class component extends Component{
                                                 <div>
                                                     <p>车牌号：${data.carNumber}</p>
                                                     <p>车类型：${data.type||''}</p>
-                                                    <p>市辖区管理部：${data.companyName}</p>
+                                                    <p>辖区管理部：${data.companyName}</p>
                                                     <p>今日收集垃圾量：${data.sumWeight||''}</p>
                                                     <p>实时位置：${addComp.street}</p>
                                                 </div>
@@ -131,6 +132,7 @@ class component extends Component{
                         </span>
                     )},
                     { title: '更多信息', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
+                        _this.state.permission.details?
                         <span>
                             <a href="javascript:;" onClick={()=>{
                                 Modal.info({
@@ -180,7 +182,7 @@ class component extends Component{
                                     ),
                                 });
                             }}>查看更多</a>
-                        </span>
+                        </span>:''
                     )},
                 ],
                 data:[]
@@ -402,8 +404,8 @@ class component extends Component{
                             }
                         }))
                     }} value={state.toolbarParams.department} 
-                    placeholder="请输入市辖区管理部门"
-                    addonBefore={<span>市辖区管理部门</span>} 
+                    placeholder="请输入辖区管理部门"
+                    addonBefore={<span>辖区管理部门</span>} 
                     style={{ width: 300, marginRight: 10, marginBottom:10 }} />
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
@@ -469,7 +471,7 @@ class component extends Component{
                             carNumber:'',
                             imei:'',
                             companyName:'',//权属单位
-                            department:'',//市辖区管理部门
+                            department:'',//辖区管理部门
                             pro:'',
                             city:'',
                             area:'',
@@ -486,7 +488,7 @@ class component extends Component{
                                 carNumber:{$set:''},//性别
                                 imei:{$set:''},//用户ick号
                                 companyName:{$set:''},//权属单位
-                                department:{$set:''},//市辖区管理部门
+                                department:{$set:''},//辖区管理部门
                                 pro:{$set:''},//省
                                 city:{$set:''},//市
                                 area:{$set:''},//市
@@ -639,11 +641,6 @@ class component extends Component{
                    okText="确认"
                    cancelText="取消"
                    visible={state.Modal.visRecord}>
-                    <Form.Item {...formItemLayout} label="车名" >
-                        <Input placeholder="请输入车名" onChange={(e)=>{
-                            _this.updateNewRecord('carName',e.target.value);
-                        }} value={state.newRecord.carName}/>
-                    </Form.Item>
                    
                     <Form.Item {...formItemLayout} label="详细地址" >
                         <Input placeholder="请输入详细地址" onChange={(e)=>{
@@ -683,7 +680,7 @@ class component extends Component{
                         }} value={state.newRecord.department}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="柴油类型" >
-                        <Select value={state.newRecord.fuelType} onChange={(value)=>{
+                        <Select value={String(state.newRecord.fuelType)} onChange={(value)=>{
                              _this.updateNewRecord('fuelType',value);
                         }} style={{ width: 120, marginRight:10 }}>
                             <Select.Option value="1">汽油</Select.Option>
@@ -715,10 +712,10 @@ class component extends Component{
                        <Select value={state.newRecord.type} onChange={(value)=>{
                              _this.updateNewRecord('type',value);
                         }} style={{ width: 120, marginRight:10 }}>
+                            <Select.Option value="4">餐厨垃圾</Select.Option>
                             <Select.Option value="1">可回收物</Select.Option>
                             <Select.Option value="2">有害垃圾</Select.Option>
                             <Select.Option value="3">其它垃圾</Select.Option>
-                            <Select.Option value="4">餐厨垃圾</Select.Option>
                         </Select>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label="垃圾重量" >

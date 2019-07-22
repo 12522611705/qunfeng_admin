@@ -45,7 +45,7 @@ export const config = {
 	JurisdictionAdmin:{
 		urls:{
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/list',
-			listAll:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/listAll'
+			listAll:'http://118.190.145.65:8888/flockpeak-shop/admin/jurisdictionAdmin/listAll',
 		}
 	},
 	// 后台用户等级积分管理
@@ -74,6 +74,7 @@ export const config = {
 			sanitationCarExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/sanitationCarExcel',
 		},
 		permission:{
+			'/sanitationCarAdmin/details':'details',
 			'/flockpeak-shop/admin/sanitationCarAdmin/delete':'delete',
             '/flockpeak-shop/admin/sanitationCarAdmin/add':'add',
             '/flockpeak-shop/admin/sanitationCarAdmin/update':'update',
@@ -113,8 +114,7 @@ export const config = {
 			importingCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/importingCollectorLog',
 			updataCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/updataCollectorLog',
 			deteleCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/deteleCollectorLog',
-			addCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/addCollectorLog',
-			exportNotificationExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportNotificationExcel'
+			addCollectorLog:'http://118.190.145.65:8888/flockpeak-shop/admin/collectorLog/addCollectorLog'
 		},
 		permission:{
 			'/flockpeak-shop/admin/collectorLog/list':'list',
@@ -132,7 +132,8 @@ export const config = {
 			notificationDelete:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationDelete',
 			notificationList:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationList',
 			notificationPublish:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationPublish',
-			notificationUpdate:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationUpdate'
+			notificationUpdate:'http://118.190.145.65:8888/flockpeak-shop/admin/notificationAdmin/notificationUpdate',
+			exportNotificationExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportNotificationExcel'
 		},
 		permission:{
 			'/flockpeak-shop/admin/notificationAdmin/notificationList':'notificationList',
@@ -145,18 +146,29 @@ export const config = {
 	// 意见反馈
 	Feedback:{
 		urls:{
-			feedbackList:'http://118.190.145.65:8888/flockpeak-shop/admin/feedbackAdmin/feedbackList'
+			feedbackList:'http://118.190.145.65:8888/flockpeak-shop/admin/feedbackAdmin/feedbackList',
+			deleteFeedback:'http://118.190.145.65:8888/flockpeak-shop/admin/feedbackAdmin/deleteFeedback',
+			updateFeedback:'http://118.190.145.65:8888/flockpeak-shop/admin/feedbackAdmin/updateFeedback',
+			exportFeedbackExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportFeedbackExcel'
+		},
+		permission:{
+			'/flockpeak-shop/admin/feedbackAdmin/deleteFeedback':'deleteFeedback',
+			'/flockpeak-shop/admin/feedbackAdmin/updateFeedback':'updateFeedback',
+			'/feedback/details':'details'
 		}
 	},
 	// 身份验证管理
 	Card:{
 		urls:{
 			list:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/list',
-			update:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/update'
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/update',
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/add',
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/cardAdmin/update',
 		},
 		permission:{
 			'/flockpeak-shop/admin/cardAdmin/list':'list',
-			'/flockpeak-shop/admin/cardAdmin/update':'update'
+			'/flockpeak-shop/admin/cardAdmin/update':'update',
+			'/flockpeak-shop/admin/cardAdmin/add':'add'
 		}
 	},
 	// 司机管理
@@ -172,6 +184,20 @@ export const config = {
 			'/flockpeak-shop/admin/driverAdmin/add':'add',
 			'/flockpeak-shop/admin/driverAdmin/delete':'delete',
 			'/flockpeak-shop/admin/driverAdmin/update':'update',
+		}
+	},
+	// 提现管理
+	Deposit:{
+		urls:{
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/depositLogAdmin/update',
+			approval:'http://118.190.145.65:8888/flockpeak-shop/admin/depositLogAdmin/approval',
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/depositLogAdmin/list'
+		},
+		permission:{
+			'/flockpeak-shop/admin/depositLogAdmin/list':'list',
+			'/flockpeak-shop/admin/depositLogAdmin/update':'update',
+			'/flockpeak-shop/admin/depositLogAdmin/approval':'approval',
+			'/depositLogAdmin/details':'details'
 		}
 	},
 	// 区域管理

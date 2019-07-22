@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Form, Table, Divider, Tag, message, Upload,
+    DatePicker, LocaleProvider, Modal, Tree } from 'antd';
 import moment from 'moment';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
@@ -23,18 +24,32 @@ class component extends Component{
         super(props)
         const _this = this;
         this.update = update.bind(this);
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 7 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 15 },
+          },
+        };
         this.state = {
             permission:{
                 list:false,
-                update:false
+                update:false,
+                add:false
             },
             Modal:{
                visUpdate:false,
-               visThumb:false
+               visThumb:false,
+               visCard:false
             },
             record:{},
+            type:'add',
             // 表格数据
             indexTable:{
+                selectedRowKeys:[],
                 pagination:{
                     current:1,
                     total:0,
@@ -45,47 +60,41 @@ class component extends Component{
                     }
                 },
                 head:[
-                    { title: '用户手机号码', dataIndex: 'tel', key: 'tel'}, 
-                    { title: '身份证名字', dataIndex: 'name', key: 'name'}, 
-                    { title: '身份证正面图片', dataIndex: 'cardFrontUrl', key: 'cardFrontUrl',render:(text)=>(
-                    	<img onClick={()=>{
-                            _this.update('set',addons(_this.state,{
-                                thumbUrl:{$set:text},
-                                Modal:{
-                                    visThumb:{$set:true}
-                                }
-                            }))
-                        }} style={{width:200,height:40}} src={text}/>
+                    { title: 'ID', dataIndex: 'id', key: 'id'}, 
+                    { title: '用户名', dataIndex: 'userName', key: 'userName'}, 
+                    { title: '用户类别', dataIndex: 'userType', key: 'userType',render:(text)=>(
+                        ['普通用户','保洁员','物业公司工作人员','街道人员','城管局','司机','公司员工'][text]
                     )}, 
-                    { title: '身份证反面图片', dataIndex: 'cardBackUrl', key: 'cardBackUrl',render:(text)=>(
-                        <img onClick={()=>{
-                            _this.update('set',addons(_this.state,{
-                                thumbUrl:{$set:text},
-                                Modal:{
-                                    visThumb:{$set:true}
-                                }
-                            }))
-                        }} style={{width:200,height:40}} src={text}/>
-                    )}, 
-                    { title: '身份证号码', dataIndex: 'cardNo', key: 'cardNo'}, 
+                    { title: '姓名', dataIndex: 'name', key: 'name'}, 
+                    { title: '提交时间', dataIndex: 'creationTime', key: 'creationTime'}, 
                     { title: '状态', dataIndex: 'state', key: 'state',render:(text)=>(
                     	['','待审核','待提交','审核通过','审核不通过'][text]
                     )}, 
-                    { title: '开始时间', dataIndex: 'creationTime', key: 'creationTime'}, 
-                    { title: '备注', dataIndex: 'remark', key: 'remark', render:(text,record)=>(
-                        <TextArea defaultValue={text} onBlur={(e)=>{
-                            Ajax.post({
-                                url:config.Card.urls.update,
-                                params:{
-                                    remark:e.target.value,
-                                    id:record.id
-                                },
-                                success:(data)=>{
-                                    _this.initIndex();
-                                }
-                            })
-                        }}/>
-                    )},
+                    { title: '审核人', dataIndex: 'adminName', key: 'adminName'}, 
+                    { title: '更多详情', dataIndex: 'more', key: 'more',render:(text,record)=>(
+                        <a style={{color:'#1155cc'}} onClick={()=>{
+                            Modal.info({
+                                title: '更多详情',
+                                content: (
+                                  <div>
+                                    <Form.Item {...formItemLayout} label='正面'>
+                                        <img src={record.cardFrontUrl}/>
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='反面'>
+                                        <img src={record.cardBackUrl}/>
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='证件号码'>
+                                        {record.cardNo||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='手机号码'>
+                                        {record.tel||'--'}
+                                    </Form.Item>
+                                  </div>
+                                ),
+                            });
+                            
+                       }} href="javascript:;">查看更多</a>
+                    )}, 
                     { title: '操作', dataIndex: 'operation', key: 'operation', render:(text,record)=>(
                         _this.state.permission.update?
                         <span>
@@ -137,7 +146,12 @@ class component extends Component{
             },
             update:{
                 remark:'',
-                state:''
+                state:'',
+                fileList1:[],
+                fileList2:[]
+            },
+            form:{
+
             },
             thumbUrl:''
         }
@@ -218,6 +232,38 @@ class component extends Component{
             }
         })
     }
+    card(){
+        const _this = this;
+        let url = '';
+        let postData = {};
+        if(_this.state.type=='add'){
+            url = config.Card.urls.add;
+            postData={
+                ..._this.state.form,
+            }
+        }else if(_this.state.type=='update'){
+            url = config.Card.urls.update;
+            postData={
+                ..._this.state.form,
+                id:_this.state.indexTable.selectedRowKeys[0]
+            }
+        }
+        Ajax.post({
+            url,
+            params:postData,
+            success:(data)=>{
+                _this.initIndex({
+                    Modal:{
+                        visCard:{$set:false}
+                    }
+                })
+            }
+        })
+    }
+    updateForm(value,key){
+        this.state.form[key] = value;
+        this.setState({})
+    }
     render(){
         const _this = this;
         const state = _this.state;
@@ -297,7 +343,7 @@ class component extends Component{
                         }))
                     }} value={state.toolbarParams.name} 
                     placeholder="请输入姓名"
-                    addonBefore={<span>姓名</span>} 
+                    addonBefore={<span>证件姓名</span>} 
                     style={{ width: 300, marginRight: 10 }}/>
 
                     <Input onChange={(e)=>{
@@ -373,42 +419,54 @@ class component extends Component{
                     }}/>
                 </div>
 
-                <div style={{textAlign:"right"}} className="main-toolbar">
+                <div className="main-toolbar">
+                    {
+                        state.permission.add ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            _this.state.Modal.visCard = true;
+                            _this.state.type = 'add';
+                            _this.setState({});
+                        }}>增加</Button>:''    
+                    }
+                    
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        state.toolbarParams = {
-                            tel:'',
-                            startTime:'',
-                            endTime:'',
-                            cardNo:'',
-                            state:'',
-                            userName:'',
-                            adminName:'',
-                            userType:'',
-                            updateStartTime:'',
-                            updateEndTime:'',
-                            name:''
-                        }
-                        _this.initIndex({
-                            toolbarParams:{
-                                tel:{$set:''},
-                                startTime:{$set:''},
-                                endTime:{$set:''},
-                                cardNo:{$set:''},
-                                state:{$set:''},
-                                userName:{$set:''},
-                                adminName:{$set:''},
-                                userType:{$set:''},
-                                updateStartTime:{$set:''},
-                                updateEndTime:{$set:''},
-                                name:{$set:''},
-                            }
-                        })
-                    }}>重置</Button>
-                    <Button type="primary" onClick={()=>{
                         _this.initIndex();
-                    }}>搜索</Button>
+                    }}>查询</Button>
+                    {
+                        state.permission.update ?
+                        <Button type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                            _this.state.Modal.visCard = true;
+                            _this.state.type = 'update';
+                            let record = {};
+                            _this.state.indexTable.data.forEach((el)=>{
+                                if(el.id == _this.state.indexTable.selectedRowKeys[0]){
+                                    record = el;
+                                }
+                            })
+                            _this.state.form = {
+                                name:record.name,
+                                cardNo:record.cardNo,
+                                tel:record.tel,
+                                cardFrontUrl:record.cardFrontUrl,
+                                cardBackUrl:record.cardBackUrl,
+                                state:record.state,
+                            }
+                            _this.setState({});
+                        }}>修改</Button>:''
+                    }
+                    
                 </div>
-                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}
+                <Table 
+                    rowSelection={{
+                        selectedRowKeys:state.indexTable.selectedRowKeys,
+                        onChange:(selectedRowKeys)=>{
+                            state.indexTable.selectedRowKeys = selectedRowKeys;
+                            _this.setState({});
+                        }
+                    }}
+                    rowKey={record=>record.id} pagination={state.indexTable.pagination}
                     columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <div style={{marginTop:-42,textAlign:'right'}}>
                     <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
@@ -470,6 +528,87 @@ class component extends Component{
                                 }
                             }))
                         }}/>
+                    </Form.Item>
+                </Modal>
+                <Modal title="用户信息"
+                  width = '680px'
+                  visible={state.Modal.visCard}
+                  onOk={_this.card.bind(_this)}
+                  onCancel={()=>{
+                    update('set',addons(state,{
+                        Modal:{visCard:{$set:false}}
+                    }))
+                  }}
+                >
+                    <Form.Item {...formItemLayout} label='身份证真实名字'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'name')
+                        }} type="text" value={state.form.name}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='身份证号码'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'cardNo')
+                        }} type="text" value={state.form.cardNo}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='手机号码'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'tel')
+                        }} type="text" value={state.form.tel}/>
+                    </Form.Item>
+
+                    <Form.Item {...formItemLayout} label='身份证正面'>
+                        <Upload 
+                              action='http://118.190.145.65:8888/flockpeak-shop/ossImg/upload'
+                              listType='picture'
+                              onChange={(info)=>{
+                                state.form.cardFrontUrl = info.file.response && info.file.response.data && info.file.response.data.split('?')[0];
+                                state.update.fileList1 = [{
+                                    uid: info.file.uid,
+                                    name: info.file.name,
+                                    status: info.file.status,
+                                    url: info.file.uid,
+                                    thumbUrl: state.form.cardFrontUrl,
+                                }]
+                                _this.setState({});
+                              }}
+                              fileList= {state.update.fileList1}>
+                            <Button>
+                                <Icon type="upload" /> 点击长传
+                            </Button>
+                        </Upload>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='身份证反面'>
+                        <Upload 
+                              action='http://118.190.145.65:8888/flockpeak-shop/ossImg/upload'
+                              listType='picture'
+                              onChange={(info)=>{
+                                state.form.cardBackUrl = info.file.response && info.file.response.data && info.file.response.data.split('?')[0];
+                                state.update.fileList2 = [{
+                                    uid: info.file.uid,
+                                    name: info.file.name,
+                                    status: info.file.status,
+                                    url: info.file.uid,
+                                    thumbUrl: state.form.cardBackUrl,
+                                }]
+                                _this.setState({});
+                              }}
+                              fileList= {state.update.fileList2}>
+                            <Button>
+                                <Icon type="upload" /> 点击长传
+                            </Button>
+                        </Upload>
+                    </Form.Item>
+                    
+                    <Form.Item {...formItemLayout} label='审核状态'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'state')
+                        }} style={{width:200}} value={state.form.state}>
+                            <Select.Option value="">全部</Select.Option>
+                            <Select.Option value="1">未提交</Select.Option>
+                            <Select.Option value="2">待审核</Select.Option>
+                            <Select.Option value="3">审核通过</Select.Option>
+                            <Select.Option value="4">未通过</Select.Option>
+                        </Select>
                     </Form.Item>
                 </Modal>
             </div>

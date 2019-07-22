@@ -3,6 +3,10 @@
 
 @value bg333333,bgededed,co333333,co37bdb4,co999999 from colors;
 
+:global(.ant-form-item){
+    margin-bottom: 0px;
+}
+
 :global(*){
     margin: 0;
     padding: 0;

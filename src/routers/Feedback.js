@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, DatePicker, LocaleProvider, Modal, Tree, Carousel } from 'antd';
+import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, Tag, Checkbox, Form, message,
+    DatePicker, LocaleProvider, Modal, Tree, Carousel } from 'antd';
 import moment from 'moment';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 
@@ -10,7 +11,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax, parseSearch } from '../utils/global';
+import { Ajax, parseSearch, formatSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
@@ -23,13 +24,30 @@ class component extends Component{
         super(props)
         const _this = this;
         this.update = update.bind(this);
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 7 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 15 },
+          },
+        };
         this.state = {
             Modal:{
-               visThumb:false
+               visThumb:false,
+               visFeed:false
+            },
+            permission:{
+                deleteFeedback:false,
+                updateFeedback:false,
+                details:false
             },
             record:{},
             // 表格数据
             indexTable:{
+                selectedRowKeys:[],
                 pagination:{
                     current:1,
                     total:0,
@@ -41,6 +59,11 @@ class component extends Component{
                 },
                 head:[
                     { title: 'ID', dataIndex: 'id', key: 'id' }, 
+                    { title: '用户名', dataIndex: 'userName', key: 'userName' }, 
+                    { title: '用户类别', dataIndex: 'type', key: 'type',render:(text)=>(
+                        ['普通用户','保洁员','物业公司工作人员','街道人员','城管局','司机','公司员工'][text]
+                    ) },
+                    { title: '反馈时间', dataIndex: 'creationTime', key: 'creationTime' }, 
                     { title: '反馈内容', dataIndex: 'content', key: 'content' }, 
                     { title: '图片', dataIndex: 'imgUrls', key: 'imgUrls' ,render:(text,record)=>(
                         <a href="javascript:;" onClick={()=>{
@@ -52,24 +75,35 @@ class component extends Component{
                             }))
                         }}>查看图片</a>
                     ) }, 
-                    { title: '来源', dataIndex: 'source', key: 'source', render:(text,record)=>(
-                        ['','H5','安卓','IOS'][text]
-                    ) }, 
-                    { title: '反馈时间', dataIndex: 'creationTime', key: 'creationTime' }, 
-                    { title: '用户ID', dataIndex: 'userId', key: 'userId' }, 
-                    { title: '电话号码', dataIndex: 'tel', key: 'tel' },
-
-                    { title: '用户类别', dataIndex: 'type', key: 'type',render:(text)=>(
-                        ['普通用户','保洁员','物业公司工作人员','街道人员','城管局','司机','公司员工'][text]
-                    ) },
                     { title: '处理意见', dataIndex: 'disposeIdea', key: 'disposeIdea' },
-                    { title: '处理结果', dataIndex: 'state', key: 'state' ,render:(text)=>(
+                    { title: '处理进度', dataIndex: 'schedule', key: 'schedule' , render:(text)=>(
                         ['','已完成','未完成'][text]
+                    )},
+                    { title: '更多详情', dataIndex: 'more', key: 'more' , render:(text,record)=>(
+                        _this.state.permission.details ?
+                        <a style={{color:'#1155cc'}} onClick={()=>{
+                            Modal.info({
+                                title: '更多信息',
+                                content: (
+                                  <div>
+                                    <Form.Item {...formItemLayout} label='电话'>
+                                        {record.tel||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='处理时间'>
+                                        {record.disposeTime||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='处理人员'>
+                                        {record.followUpPeople||'--'}
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='备注'>
+                                        {record.remark||'--'}
+                                    </Form.Item>
+                                  </div>
+                                ),
+                            });
+                            
+                       }} href="javascript:;">点击查看</a>:''
                     ) },
-                    { title: '处理时间', dataIndex: 'disposeTime', key: 'disposeTime' },
-                    { title: '跟进人', dataIndex: 'followUpPeople', key: 'followUpPeople' },
-                    { title: '备注', dataIndex: 'remark', key: 'remark' },
-
                 ],
                 data:[]
             },
@@ -81,6 +115,9 @@ class component extends Component{
                 state:'',
                 type:'',
                 source:''
+            },
+            form:{
+
             }
         }
     }
@@ -106,7 +143,7 @@ class component extends Component{
             },
             success:(data)=>{
                 data.forEach((el)=>{
-                    // _this.state.permission[config.Notification.permission[el.url]] = true;
+                    _this.state.permission[config.Feedback.permission[el.url]] = true;
                 })
                 console.log(_this.state.permission)
                 _this.setState({});
@@ -116,19 +153,19 @@ class component extends Component{
     /*
      *  初始化页面数据
      */
-    initIndex(){
+    initIndex(updateParams){
         const _this = this;
         const params = _this.state.toolbarParams;
         Ajax.get({
             url:config.Feedback.urls.feedbackList,
             params:{
+                state:(params.status1 && params.status2) ? '' : (params.status1 && 1 ) || (params.status2 && 2 ),
                 page:_this.state.indexTable.pagination.current,
                 pageSize:_this.state.indexTable.pagination.pageSize,
                 tel:params.tel||'',
                 startTime:new Date(params.createTimeStart).getTime()||'',
                 endTime:new Date(params.createTimeEnd).getTime()||'',
                 name:params.name||'',
-                state:params.state||'',
                 type:params.type||'',
                 source:params.source||''
             },
@@ -149,16 +186,48 @@ class component extends Component{
                                 $set:_this.state.indexTable.pagination.current
                             }
                         }
-                    }
+                    },
+                    ...updateParams
                 }))
             }
         })
+    }
+    //修改
+    updateFeed(){
+        const _this = this;
+        Ajax.post({
+            url:config.Feedback.urls.updateFeedback,
+            params:{
+                ..._this.state.form,
+                id:_this.state.indexTable.selectedRowKeys[0]
+            },
+            success:(data)=>{
+                _this.initIndex({
+                    Modal:{
+                        visFeed:{$set:false}
+                    }
+                })
+            }
+        })
+    }
+    updateForm(value,key){
+        this.state.form[key] = value;
+        this.setState({})
     }
     render(){
         const _this = this;
         const state = _this.state;
         const update = _this.update;
-       
+        const formItemLayout = {
+          labelCol: {
+            xs: { span: 24 },
+            sm: { span: 7 },
+          },
+          wrapperCol: {
+            xs: { span: 24 },
+            sm: { span: 15 },
+          },
+        };
         return (
             <div className="content">
                 <Breadcrumb>
@@ -241,51 +310,130 @@ class component extends Component{
                             }))
                         }} />
                     </LocaleProvider>
-                    处理结果：<Select value={state.toolbarParams.state} onChange={(value)=>{
-                         update('set',addons(state,{
+                    处理结果：
+                    <Checkbox checked={state.toolbarParams.status1} onChange={(e)=>{
+                        update('set',addons(state,{
                             toolbarParams:{
-                                state:{$set:value}
+                                status1:{
+                                    $set:e.target.checked
+                                } 
                             }
-                         }))
-                    }} style={{ width: 120, marginRight:10 }}>
-                        <Select.Option value="">全部</Select.Option>
-                        <Select.Option value="1">已完成</Select.Option>
-                        <Select.Option value="2">未完成</Select.Option>
-                    </Select>
+                        }))
+                    }}>已完成</Checkbox>
+                    <Checkbox checked={state.toolbarParams.status2} onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                status2:{
+                                    $set:e.target.checked
+                                } 
+                            }
+                        }))
+                    }}>未完成</Checkbox>
                 </div>
-                <div style={{textAlign:"right"}} className="main-toolbar">
+
+                <div className="main-toolbar">
+                    {
+                        state.permission.updateFeedback ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行修改');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行修改');
+                            _this.state.Modal.visFeed = true;
+                            _this.state.type = 'update';
+                            let record = {};
+                            _this.state.indexTable.data.forEach((el)=>{
+                                if(el.id == _this.state.indexTable.selectedRowKeys[0]){
+                                    record = el;
+                                }
+                            })
+                            _this.state.form = {
+                                disposeIdea:record.disposeIdea,
+                                followUpPeople:record.followUpPeople,
+                                remark:record.remark,
+                                schedule:record.schedule
+                            }
+                            _this.setState({}); 
+                        }}>修改</Button>:''
+                    }
+                    
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        state.toolbarParams={
-                            tel:'',
-                            startTime:'',
-                            endTime:'',
-                            name:'',
-                            state:'',
-                            type:'',
-                            source:''
-                        }
-                        _this.initIndex({
-                            toolbarParams:{
-                                tel:{$set:''},
-                                startTime:{$set:''},
-                                endTime:{$set:''},
-                                name:{$set:''},
-                                state:{$set:''},
-                                type:{$set:''},
-                                source:{$set:''},
-                            }
-                        })
-                    }}>重置</Button>
-                    <Button type="primary" onClick={()=>{
                         _this.initIndex();
-                    }}>搜索</Button>
+                    }}>查询</Button>
+                    {
+                        state.permission.deleteFeedback ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            if(_this.state.indexTable.selectedRowKeys.length>1) return message.info('只能选择一个进行删除');
+                            if(_this.state.indexTable.selectedRowKeys.length<1) return message.info('请选择一个进行删除');
+                            Modal.confirm({
+                                title:'提示',
+                                content:'你确定要删除吗？',
+                                okText:'确定',
+                                cancelText:'取消',
+                                onOk(){
+                                    Ajax.post({
+                                        url:config.Feedback.urls.deleteFeedback,
+                                        params:{
+                                            ids:_this.state.indexTable.selectedRowKeys
+                                        },
+                                        success:(data)=>{
+                                            _this.initIndex({})
+                                        }
+                                    }) 
+                                }
+                            })
+                        }}>删除</Button>:''    
+                    }
+                    
+                    <Button type="primary" onClick={()=>{
+                        window.open(config.Feedback.urls.exportFeedbackExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams)); 
+                    }}>数据导出</Button>
                 </div>
-                <Table rowKey={record=>record.id} pagination={state.indexTable.pagination}
+                <Table 
+                    rowSelection={{
+                        selectedRowKeys:state.indexTable.selectedRowKeys,
+                        onChange:(selectedRowKeys)=>{
+                            state.indexTable.selectedRowKeys = selectedRowKeys;
+                            _this.setState({});
+                        }
+                    }}
+                    rowKey={record=>record.id} pagination={state.indexTable.pagination}
                     columns={state.indexTable.head} dataSource={state.indexTable.data} />
                 <div style={{marginTop:-42,textAlign:'right'}}>
                     <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
                 </div>
-
+                <Modal title="反馈信息修改"
+                  width = '680px'
+                  visible={state.Modal.visFeed}
+                  onOk={_this.updateFeed.bind(_this)}
+                  onCancel={()=>{
+                    update('set',addons(state,{
+                        Modal:{visFeed:{$set:false}}
+                    }))
+                  }}>
+                    <Form.Item {...formItemLayout} label='处理意见'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'disposeIdea')
+                        }} type="text" value={state.form.disposeIdea}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='处理人员'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'followUpPeople')
+                        }} type="text" value={state.form.followUpPeople}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='备注'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'remark')
+                        }} type="text" value={state.form.remark}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='处理进度'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'source')
+                        }} style={{width:200}} value={state.form.source}>
+                            <Select.Option value="">全部</Select.Option>
+                            <Select.Option value="1">未完成</Select.Option>
+                            <Select.Option value="2">已完成</Select.Option>
+                        </Select>
+                    </Form.Item>
+                </Modal>
                 <Modal title="图片查看" 
                     okText="确定"
                     cancelText="取消"
