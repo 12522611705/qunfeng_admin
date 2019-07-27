@@ -153,7 +153,7 @@ class component extends Component{
             url:config.Notification.urls.notificationList,
             params:{
                 status:(params.status1 && params.status2) ? '' : (params.status1 && 1 ) || (params.status2 && 2 ),
-                headline:params.headLine||'',
+                headline:params.headline||'',
                 page:_this.state.indexTable.pagination.current||1,
                 pageSize:_this.state.indexTable.pagination.pageSize||10,
                 startTime:new Date(params.createTimeStart).getTime() || '',

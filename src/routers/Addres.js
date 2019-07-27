@@ -75,7 +75,7 @@ class component extends Component{
         Modal.confirm({
             title:"你确定要删除此节点吗",
             okText:'确定',
-            cancelText:'删除',
+            cancelText:'取消',
             onOk(){
                 Ajax.post({
                     url:config.Addres.urls.delete,
@@ -111,8 +111,9 @@ class component extends Component{
     // 增加社区
     addComm(node,oldType,eve){
         eve.stopPropagation();
-        const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][node.type-1];
         const type = node.type;
+        const parentCode = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][type-1];
+        const code = ['',node.provinceCode,node.cityCode,node.areaCode,node.streetCode,node.communityCode][type];
 
         this.update('set',addons(this.state,{
             Modal:{
@@ -122,9 +123,9 @@ class component extends Component{
             },
             area:{
                 editorStatus:{$set:'add'},
-                type:{$set:oldType && type},
+                type:{$set: type && oldType},
                 text:{$set:''},
-                parentCode:{$set:parentCode}
+                parentCode:{$set:oldType ? code : parentCode}
             }
         }))
     }
@@ -273,6 +274,8 @@ class component extends Component{
                         }
                     }))
                 }}
+                okText="确定"
+                cancelText="取消"
                 onOk={()=>{
                     let url = '';
                     let params = '';

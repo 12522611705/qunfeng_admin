@@ -20,7 +20,6 @@ import Cascader from '../components/Cascader';
 
 const { RangePicker } = DatePicker;
 
-
 class component extends Component{
     constructor(props){
         super(props)
@@ -45,6 +44,9 @@ class component extends Component{
                 userGradeLogList:false,
                 userGradeLogDetails:false,
                 walletAdminList:false,
+                updateIntegral:false,
+                importExcelUser:false,
+                userExcel:false,
                 walletAdminDetails:false,
                 userAdminExportUserExcel:false,
                 addUserAdmin:false,
@@ -157,6 +159,7 @@ class component extends Component{
                     { title: '所属物业公司', dataIndex: 'companyName', key: 'companyName' }, 
                     { title: '卡号', dataIndex: 'ickNo', key: 'ickNo' }, 
                     { title: '投放总重量Kg', dataIndex: 'throwIn', key: 'throwIn' }, 
+                    { title: '绿色贡献值', dataIndex: 'contribution', key: 'contribution' }, 
                     // { title: '绿色贡献值', dataIndex: 'contribution', key: 'contribution' , render:(text,record)=>(
                     //    <div>
                     //     <p style={{textAlign:'center'}}>{text||0}</p>
@@ -186,6 +189,14 @@ class component extends Component{
                                     }
                                 })
                             }} href="javascript:;">点击查看</a></p>:''
+                        }
+                        {
+                            _this.state.permission.updateIntegral?
+                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                                _this.state.Modal.visIntegralValue = true;
+                                _this.state.record = record;
+                                _this.setState({});
+                            }} href="javascript:;">修改金额</a></p>:''
                         }
                        </div>
                     ) }, 
@@ -230,6 +241,9 @@ class component extends Component{
                                             <Form.Item {...formItemLayout} label='街道'>
                                                 {data.street||'--'}
                                             </Form.Item>
+                                            <Form.Item {...formItemLayout} label='社区'>
+                                                {data.community||'--'}
+                                            </Form.Item>
                                             <Form.Item {...formItemLayout} label='详细地址'>
                                                 {data.address||'--'}
                                             </Form.Item>
@@ -240,7 +254,7 @@ class component extends Component{
                                                 {data.room||'--'}
                                             </Form.Item>
                                             <Form.Item {...formItemLayout} label='性别'>
-                                                {data.sex||'--'}
+                                                {['','男','女'][data.sex]||'--'}
                                             </Form.Item>
                                             <Form.Item {...formItemLayout} label='年龄'>
                                                 {data.age||'--'}
@@ -964,22 +978,28 @@ class component extends Component{
                             })
                         }}>删除</Button>:''
                     }
-                    <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        window.open(config.UserAdmin.urls.userExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
-                    }}>数据导出</Button>
-                    
-                    <Upload name="file" 
-                        style={{display:'inline'}}
-                        fileList={[]}
-                        headers={{
-                            token:localStorage.getItem('token')
-                        }}
-                        action="http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/importExcelUser" 
-                        onChange={(info)=>{
-                            _this.initIndex();
-                        }}>
-                        <Button style={{marginRight:10}} type="primary">数据导入</Button>
-                    </Upload>
+                    {
+                        state.permission.userExcel ?
+                        <Button style={{marginRight:10}} type="primary" onClick={()=>{
+                            window.open(config.UserAdmin.urls.userExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                        }}>数据导出</Button>:''
+                    }
+                    {
+                        state.permission.importExcelUser ?
+                        <Upload name="file" 
+                            style={{display:'inline'}}
+                            fileList={[]}
+                            headers={{
+                                token:localStorage.getItem('token')
+                            }}
+                            action="http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/importExcelUser" 
+                            onChange={(info)=>{
+                                message.info('导入成功');
+                                _this.initIndex();
+                            }}>
+                            <Button style={{marginRight:10}} type="primary">数据导入</Button>
+                        </Upload>:''
+                    }
                     
                 </div>
                 <Table 
@@ -1112,6 +1132,44 @@ class component extends Component{
                     columns={state.depositTable.head} dataSource={state.depositTable.data} />
                 </Modal>
                 
+                <Modal title="修改金额"
+                  width = '680px'
+                  visible={state.Modal.visIntegralValue}
+                  onOk={()=>{
+                    Ajax.post({
+                        url:config.UserAdmin.urls.updateIntegral,
+                        params:{
+                            userId:state.record.id,
+                            remark:state.integralRemark,
+                            price:state.integralValue,
+                        },
+                        success:(data)=>{
+                            _this.initIndex({
+                                Modal:{
+                                    visIntegralValue:{$set:false}
+                                }
+                            })
+                        }
+                    })
+                  }}
+                  onCancel={()=>{
+                    update('set',addons(state,{
+                        Modal:{visIntegralValue:{$set:false}}
+                    }))
+                  }}>
+                    <Form.Item {...formItemLayout} label='金额'>
+                        <Input onChange={(e)=>{
+                            _this.state.integralValue = e.target.value;
+                            _this.setState({});
+                        }} type="text" value={state.integralValue}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='备注'>
+                        <Input onChange={(e)=>{
+                            _this.state.integralRemark = e.target.value;
+                            _this.setState({});
+                        }} type="text" value={state.integralRemark}/>
+                    </Form.Item>
+                </Modal>
                 <Modal title="用户信息"
                   width = '680px'
                   visible={state.Modal.visUser}
@@ -1168,23 +1226,6 @@ class component extends Component{
                             <Select.Option value="2">女</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='地区选择'>
-                        <Cascader data={state.form} onChange={(data)=>{
-                            update('set',addons(state,{
-                                form:{
-                                    pro:{$set:data.pro},
-                                    city:{$set:data.city},
-                                    area:{$set:data.area},
-                                    street:{$set:data.street}
-                                }
-                            }))
-                        }}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='小区名字'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'plot')
-                        }} type="text" value={state.form.plot}/>
-                    </Form.Item>
                     <Form.Item {...formItemLayout} label='公司名称'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'companyName')
@@ -1203,6 +1244,28 @@ class component extends Component{
                             <Select.Option value="6">公司员工</Select.Option>
                         </Select>
                     </Form.Item>
+                    <Form.Item {...formItemLayout} label='地区选择'>
+                        <Cascader data={state.form} onChange={(data)=>{
+                            update('set',addons(state,{
+                                form:{
+                                    pro:{$set:data.pro},
+                                    city:{$set:data.city},
+                                    area:{$set:data.area},
+                                    street:{$set:data.street}
+                                }
+                            }))
+                        }}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='小区名字'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'plot')
+                        }} type="text" value={state.form.plot}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='社区名字'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'community')
+                        }} type="text" value={state.form.community}/>
+                    </Form.Item>
                     <Form.Item {...formItemLayout} label='单元：房号'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'room')
@@ -1212,11 +1275,6 @@ class component extends Component{
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'ridgepole')
                         }} type="text" value={state.form.ridgepole}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='社区名字'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'community')
-                        }} type="text" value={state.form.community}/>
                     </Form.Item>
                 </Modal>
             </div>

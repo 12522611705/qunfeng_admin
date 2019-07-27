@@ -121,6 +121,9 @@ class component extends Component{
                                 title: '更多信息',
                                 content: (
                                   <div>
+                                    <Form.Item {...formItemLayout} label='省'>
+                                        {record.pro||'--'}
+                                    </Form.Item>
                                     <Form.Item {...formItemLayout} label='市'>
                                         {record.city||'--'}
                                     </Form.Item>
@@ -203,6 +206,9 @@ class component extends Component{
                                                 }
                                             })
                                         }}>点击查看</a>
+                                    </Form.Item>
+                                    <Form.Item {...formItemLayout} label='车辆管理员'>
+                                        {record.adminName||'--'}
                                     </Form.Item>
                                     <Form.Item {...formItemLayout} label='电话'>
                                         {record.tel||'--'}
@@ -366,6 +372,19 @@ class component extends Component{
                         <Select.Option value="2">有害垃圾</Select.Option>
                         <Select.Option value="1">可回收垃圾</Select.Option>
                     </Select>
+
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                imei:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.imei} 
+                    placeholder="请输入卡号"
+                    addonBefore={<span>卡号</span>} 
+                    style={{ width: 300, marginRight: 10, marginBottom:10 }}/>
                 </div>
 
                 <div className="main-toolbar">

@@ -27,11 +27,11 @@ class component extends Component{
         const formItemLayout = {
           labelCol: {
             xs: { span: 24 },
-            sm: { span: 7 },
+            sm: { span: 4 },
           },
           wrapperCol: {
             xs: { span: 24 },
-            sm: { span: 15 },
+            sm: { span: 20 },
           },
         };
         this.state = {
@@ -75,13 +75,14 @@ class component extends Component{
                         <a style={{color:'#1155cc'}} onClick={()=>{
                             Modal.info({
                                 title: '更多详情',
+                                width:600,
                                 content: (
                                   <div>
                                     <Form.Item {...formItemLayout} label='正面'>
-                                        <img src={record.cardFrontUrl}/>
+                                        <img style={{width:'100%'}} src={record.cardFrontUrl}/>
                                     </Form.Item>
                                     <Form.Item {...formItemLayout} label='反面'>
-                                        <img src={record.cardBackUrl}/>
+                                        <img style={{width:'100%'}} src={record.cardBackUrl}/>
                                     </Form.Item>
                                     <Form.Item {...formItemLayout} label='证件号码'>
                                         {record.cardNo||'--'}

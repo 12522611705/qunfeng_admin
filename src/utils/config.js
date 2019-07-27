@@ -1,12 +1,103 @@
 export const config = {
 	// 公用接口
 	urls:{
+		exportDepositLogExcel:'http://118.190.145.65:8888/flockpeak-shop/flockpeak-shop/exportExcel/exportDepositLogExcel',
+		exportGrbageHourQuantity:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportGrbageHourQuantity',
 		streetList:'http://118.190.145.65:8888/flockpeak-shop/atlasCenter/streetList',
-		adminUserDetailsByToken:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserDetailsByToken'
+		adminUserDetailsByToken:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/adminUserDetailsByToken',
+		exportGarbageExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportGarbageExcel',
+		exportCategoryExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportCategoryExcel',
+		exportGarbageLogExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/exportGarbageLogExcel'
+	},
+	// 投放时间断统计
+	Hour:{
+		urls:{
+			garbageHourQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/garbageHourQuantity'
+		}
+	},
+	// 垃圾分类每天数据汇总
+	Day:{
+		urls:{
+			garbageDayQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/garbageDayQuantity'
+
+		}
+	},
+	// 垃圾分类设备数据汇总
+	Sum:{
+		urls:{
+			garbageSumQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/garbageSumQuantity'
+		}
+	},
+	// 活跃和非活跃用户数量的统计
+	Active:{
+		urls:{
+			userActiveQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/userActiveQuantity'
+		}
+	},
+	// 用户了趋势统计
+	Trend:{
+		urls:{
+			userTrendQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/userTrendQuantity'
+		}
+	},
+	// 用户年龄段统计
+	UserAge:{
+		urls:{
+			userAgeQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/userAgeQuantity'
+		}
+	},
+	// 用户量统计
+	Quantity:{
+		urls:{
+			userQuantity:'http://118.190.145.65:8888/flockpeak-shop/admin/dataStatisticsAdmin/userQuantity'
+		}
+	},
+	// 查询设备管理
+	Garbage:{
+		urls:{
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageAdmin/add',
+			delete:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageAdmin/delete',
+			importExcelGarbage:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageAdmin/importExcelGarbage',
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageAdmin/list',
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageAdmin/update'
+		},
+		permission:{
+			'/flockpeak-shop/admin/garbageAdmin/add':'add',
+			'/flockpeak-shop/admin/garbageAdmin/delete':'delete',
+			'/flockpeak-shop/admin/garbageAdmin/importExcelGarbage':'importExcelGarbage',
+			'/flockpeak-shop/admin/garbageAdmin/list':'list',
+			'/flockpeak-shop/admin/garbageAdmin/update':'update'
+		}
+	},
+	//  回收种类及价格维护管理
+	Category:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageCategoryAdmin/list',
+			add:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageCategoryAdmin/add',
+			update:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageCategoryAdmin/update'
+		},
+		permission:{
+			'/flockpeak-shop/admin/garbageCategoryAdmin/list':'list',
+			'/flockpeak-shop/admin/garbageCategoryAdmin/add':'add',
+			'/flockpeak-shop/admin/garbageCategoryAdmin/update':'update'
+		}
+	},
+	// 回收记录列表
+	GarbageLog:{
+		urls:{
+			list:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageLogAdmin/list',
+			queryList:'http://118.190.145.65:8888/flockpeak-shop/admin/garbageLogAdmin/queryList'
+		},
+		permission:{
+			'/admin/garbageLogAdmin/list':'list',
+			'/admin/garbageLogAdmin/queryList':'queryList',
+			'/admin/garbageLogAdmin/details':'details'
+		}
 	},
 	// 用户列表
 	UserAdmin:{
 		urls:{
+			updateIntegral:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/updateIntegral',
 			userExcel:'http://118.190.145.65:8888/flockpeak-shop/exportExcel/userExcel',
 			importExcelUser:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/importExcelUser',
 			garbageOrderList:'http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/garbageOrderList',
@@ -27,6 +118,9 @@ export const config = {
 		},
 		router:{},
 		permission:{
+			'/flockpeak-shop/admin/userAdmin/importExcelUser':'importExcelUser',
+			'/flockpeak-shop/exportExcel/userExcel':'userExcel',
+			'/flockpeak-shop/admin/userAdmin/updateIntegral':'updateIntegral',
 			'/flockpeak-shop/admin/userAdmin/garbageOrderList':'garbageOrderList',
 			'/flockpeak-shop/admin/userAdmin/depositList':'depositList',
 			'/flockpeak-shop/admin/userAdmin/deleteUserAdmin':'deleteUserAdmin',

@@ -11,7 +11,7 @@ import { withRouter } from 'react-router';
 import addons from 'react-addons-update';
 import update from 'react-update';
 
-import { Ajax, parseSearch } from '../utils/global';
+import { Ajax, parseSearch, formatSearch } from '../utils/global';
 import { config } from '../utils/config';
 import Cities from '../utils/Cities';
 // import { createForm } from 'rc-form';
@@ -60,22 +60,19 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
+                    { title: 'ID', dataIndex: 'id', key: 'id'}, 
+                    { title: '订单号', dataIndex: 'orderNo', key: 'orderNo'},
                     { title: '用户名', dataIndex: 'userName', key: 'userName'}, 
-                    { title: '联系电话', dataIndex: 'tel', key: 'tel'}, 
-                    { title: '用户类型', dataIndex: 'type', key: 'type',render:(text)=>(
+                    { title: '用户类别', dataIndex: 'type', key: 'type',render:(text)=>(
                         ['普通用户','保洁员','物业公司工作人员','街道人员','城管局','司机','公司员工'][text]
-                    )}, 
-                    { title: '订单编号', dataIndex: 'orderNo', key: 'orderNo'}, 
-                    { title: '创建时间', dataIndex: 'careateTime', key: 'careateTime'}, 
-                    { title: '余额', dataIndex: 'money', key: 'money'}, 
-                    { title: '交易方式', dataIndex: 'depositLogType', key: 'depositLogType',render:(text)=>(
-                        ['','微信','支付宝','银行卡'][text]
-                    )}, 
+                    )},  
+                    { title: '电话号码', dataIndex: 'tel', key: 'tel'}, 
+                    { title: '提出余额', dataIndex: 'money', key: 'money'}, 
                     { title: '提现', dataIndex: 'account', key: 'account',render:(text,record)=>(
                         _this.state.permission.details ?
                         <a href="javascript:;" onClick={()=>{
@@ -84,7 +81,10 @@ class component extends Component{
                             _this.initDetails(record);
                         }}>查看明细</a>:''
                     )}, 
-                    { title: '提现者名称', dataIndex: 'name', key: 'name'}, 
+
+                    { title: '提交时间', dataIndex: 'careateTime', key: 'careateTime'}, 
+                    { title: '审核时间', dataIndex: 'toAccountTime', key: 'toAccountTime'}, 
+                    { title: '审核人', dataIndex: 'name', key: 'name'}, 
                     { title: '交易状态', dataIndex: 'state', key: 'state',render:(text)=>(
                         ['','提交申请成功','提现成功','提现失败','审核中','取消提现'][text]
                     )}
@@ -415,9 +415,11 @@ class component extends Component{
                         }
                         _this.setState({});
                     }}>审批</Button>
+                    
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        
+                        window.open(config.urls.exportDepositLogExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>导出数据</Button>
+
                 </div>
                 <Table 
                     rowSelection={{
