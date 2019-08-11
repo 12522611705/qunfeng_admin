@@ -59,8 +59,8 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
@@ -101,7 +101,7 @@ class component extends Component{
                                         <Form.Item {...formItemLayout} label='设备类型'>
                                             {['','办公室','移动称'][record.type]||'--'}
                                         </Form.Item>
-                                        <Form.Item {...formItemLayout} label='设备编号'>
+                                        <Form.Item {...formItemLayout} label='种类编号'>
                                             {record.garbageNumber||'--'}
                                         </Form.Item>
                                         <Form.Item {...formItemLayout} label='权属单位'>
@@ -184,7 +184,9 @@ class component extends Component{
                 params:{
                     page:_this.state.indexTable.pagination.current||1,
                     pageSize:_this.state.indexTable.pagination.pageSize||10,
-                    ...params
+                    ...params,
+                    startTime:new Date(params.startTime).getTime()||'',//开始时间
+                    endTime:new Date(params.endTime).getTime()||'',//结束时间
                 },
                 success:(data)=>{
                     _this.update('set',addons(_this.state,{
@@ -285,26 +287,38 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                number:{
+                                className:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.number} 
+                    }} value={state.toolbarParams.className} 
                     placeholder="请输入种类名称"
                     addonBefore={<span>种类名称</span>} 
                     style={{ width: 200, marginRight: 10, marginBottom:10 }} />
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                imei:{
+                                number:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.imei} 
+                    }} value={state.toolbarParams.number} 
                     placeholder="请输入种类编号"
                     addonBefore={<span>种类编号</span>} 
+                    style={{ width: 200, marginRight: 10, marginBottom:10 }} />
+                    <Input onChange={(e)=>{
+                        update('set',addons(state,{
+                            toolbarParams:{
+                                facilityNumber:{
+                                    $set:e.target.value
+                                }    
+                            }
+                        }))
+                    }} value={state.toolbarParams.facilityNumber} 
+                    placeholder="请输入设备编号"
+                    addonBefore={<span>设备编号</span>} 
                     style={{ width: 200, marginRight: 10, marginBottom:10 }} />
                     
                 </div>
@@ -314,12 +328,12 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                userName:{
+                                adminRole:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.userName} 
+                    }} value={state.toolbarParams.adminRole} 
                     placeholder="请输入操作人员"
                     addonBefore={<span>操作人员</span>} 
                     style={{ width: 300, marginRight: 10, marginBottom:10 }} />
@@ -327,12 +341,12 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                tel:{
+                                adminRoleId:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.tel} 
+                    }} value={state.toolbarParams.adminRoleId} 
                     placeholder="请输入操作人员ID"
                     addonBefore={<span>操作人员ID</span>} 
                     style={{ width: 300, marginRight: 10, marginBottom:10 }} />
@@ -411,6 +425,7 @@ class component extends Component{
                                 remark:record.remark,
                                 tel:record.tel,
                                 type:record.type,
+                                imei:record.imei
                             }
                             _this.setState({});
                         }}>修改</Button>:''
@@ -440,7 +455,7 @@ class component extends Component{
                     <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
                 </div>
 
-                <Modal title="用户信息"
+                <Modal title="回收价格管理"
                   width = '680px'
                   visible={state.Modal.visCate}
                   onOk={_this.cate.bind(_this)}
@@ -471,11 +486,6 @@ class component extends Component{
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'company')
                         }} type="text" value={state.form.company}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='种类在设备的位置'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'index')
-                        }} type="text" value={state.form.index}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label='绿色贡献值'>
                         <Input onChange={(e)=>{
@@ -509,6 +519,12 @@ class component extends Component{
                             <Select.Option value="1">办公室</Select.Option>
                             <Select.Option value="2">移动称</Select.Option>
                         </Select>
+                    </Form.Item>
+
+                    <Form.Item {...formItemLayout} label='IMEI号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'imei')
+                        }} type="text" value={state.form.imei}/>
                     </Form.Item>
                 </Modal>
 

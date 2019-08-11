@@ -185,6 +185,12 @@ class component extends Component{
             series: [{
                 data: data.map((el)=>(el.weight)),
                 type: 'bar',//配置样式
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 itemStyle: {   
                     //通常情况下：
                     normal:{  

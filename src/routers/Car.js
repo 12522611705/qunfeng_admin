@@ -87,7 +87,7 @@ class component extends Component{
                                         }));
                                         let map = new BMap.Map("allmap");
                                         let point = new BMap.Point(data.lon, data.lat);
-                                        map.centerAndZoom(point, 12);  // 初始化地图,设置中心点坐标和地图级别
+                                        map.centerAndZoom(point, 30);  // 初始化地图,设置中心点坐标和地图级别
                                         let gc = new BMap.Geocoder();
 
                                         let marker = new BMap.Marker(point);  // 创建标注
@@ -597,12 +597,15 @@ class component extends Component{
                     }}>数据导出</Button>
                     <Upload name="file" 
                         style={{display:'inline'}}
-                        fileList={[]}
+                        className="myupdate"
                         headers={{ 
                             token:localStorage.getItem('token')
                         }}
                         action="http://118.190.145.65:8888/flockpeak-shop//admin/sanitationCarAdmin/importExcelSation" 
                         onChange={(info)=>{
+                            if(info.file.response && info.file.response.code) {
+                                message.info(info.file.response.msg);
+                            }
                             _this.initIndex();
                         }}>
                         <Button style={{marginRight:10}} type="primary">数据导入</Button>

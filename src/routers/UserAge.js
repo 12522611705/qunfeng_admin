@@ -158,7 +158,7 @@ class component extends Component{
 
         let option = {
             title : {
-                text: '用户量占比统计',
+                text: '年龄段用户比例',
                 top:20,
                 x:'center'
             },

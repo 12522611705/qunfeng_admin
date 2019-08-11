@@ -540,12 +540,15 @@ class component extends Component{
                         state.permission.importingCollectorLog ?
                         <Upload name="file" 
                             style={{display:'inline'}}
-                            fileList={[]}
+                            className="myupdate"
                             headers={{ 
                                 token:localStorage.getItem('token')
                             }}
                             action="http://118.190.145.65:8888/flockpeak-shop//admin/sanitationCarAdmin/importExcelSation" 
                             onChange={(info)=>{
+                                if(info.file.response && info.file.response.code) {
+                                    message.info(info.file.response.msg);
+                                }
                                 _this.initIndex();
                             }}>
                             <Button style={{marginRight:10}} type="primary">数据导入</Button>
@@ -595,7 +598,7 @@ class component extends Component{
                             _this.updateForm(e.target.value,'address')
                         }} type="text" value={state.form.address}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='IMEI号'>
+                    <Form.Item {...formItemLayout} label='卡号'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'imei')
                         }} type="text" value={state.form.imei}/>
@@ -619,7 +622,7 @@ class component extends Component{
                         }} type="text" value={state.form.barrelage}/>
                     </Form.Item>
                     
-                    <Form.Item {...formItemLayout} label='联系电话'>
+                    <Form.Item {...formItemLayout} label='电话'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'tel')
                         }} type="text" value={state.form.tel}/>
@@ -658,15 +661,15 @@ class component extends Component{
                             _this.updateForm(e.target.value,'department')
                         }} type="text" value={state.form.department}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='总重量'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'laterWeight')
-                        }} type="text" value={state.form.laterWeight}/>
-                    </Form.Item>
                     <Form.Item {...formItemLayout} label='小区名/单位名字 '>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'plotName')
                         }} type="text" value={state.form.plotName}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='总重量'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'laterWeight')
+                        }} type="text" value={state.form.laterWeight}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label='当前重量'>
                         <Input onChange={(e)=>{

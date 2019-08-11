@@ -63,7 +63,9 @@ class component extends Component{
             // 表格数据
             indexTable:{
                 head:[
-                    { title: '时间段', dataIndex: 'dayss', key: 'dayss'}, 
+                    { title: '时间段', dataIndex: 'dayss', key: 'dayss',render:(text)=>(
+                        text+':00'
+                    )}, 
                     { title: '投放用户总数', dataIndex: 'sumUser', key: 'sumUser'}, 
                     { title: '投放次数', dataIndex: 'put', key: 'put'}, 
                     { title: '总重量', dataIndex: 'sumWeight', key: 'sumWeight'}, 
@@ -141,6 +143,17 @@ class component extends Component{
                 trigger: 'axis',
                 formatter: "{b} : {c}"
             },
+            legend: {
+                top:50,
+                data:['投放次数','总重量']
+            },
+            grid: {
+                top:100,
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
             xAxis: {
                 type: 'category',
                 data: data.map((el)=>(el.dayss))
@@ -150,10 +163,24 @@ class component extends Component{
             },
             series: [{
                 name:'投放次数',
+                stack:'投放次数',
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 data: data.map((el)=>(el.put)),
                 type: 'line'
             },{
                 name:'总重量',
+                stack:'总重量',
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 data: data.map((el)=>(el.sumWeight)),
                 type: 'line'
             }]

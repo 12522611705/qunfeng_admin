@@ -58,8 +58,8 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
@@ -77,10 +77,11 @@ class component extends Component{
                             <a href="javascript:;" onClick={()=>{
                                 Modal.info({
                                     title: '更多信息',
+                                    width:800,
                                     content: (
                                       <div>
-                                        <Table dataSource={_this.state.indexTable.data} columns={[
-                                            { title: '时间', dataIndex: 'createTime', key: 'createTime'},
+                                        <Table rowKey={record=>record.id} dataSource={record.garbageLogDetailss} columns={[
+                                            // { title: '时间', dataIndex: 'createTime', key: 'createTime'},
                                             { title: '用户名', dataIndex: 'userName', key: 'userName'},
                                             { title: '回收类型', dataIndex: 'className', key: 'className'},
                                             { title: '重量kg', dataIndex: 'weightDetails', key: 'weightDetails'},
@@ -190,7 +191,9 @@ class component extends Component{
                 params:{
                     page:_this.state.indexTable.pagination.current||1,
                     pageSize:_this.state.indexTable.pagination.pageSize||10,
-                    ...params
+                    ...params,
+                    startTime:new Date(params.startTime).getTime()||'',//开始时间
+                    endTime:new Date(params.endTime).getTime()||'',//结束时间
                 },
                 success:(data)=>{
                     _this.update('set',addons(_this.state,{
@@ -398,7 +401,7 @@ class component extends Component{
                     addonBefore={<span>权属单位</span>} 
                     style={{ width: 300, marginRight: 10, marginBottom:10 }} />
 
-                    注册时间：
+                    回收时间：
                     <LocaleProvider locale={zh_CN}>
                         <RangePicker value={state.toolbarParams.startTime ? [moment(state.toolbarParams.startTime, 'YYYY/MM/DD'),moment(state.toolbarParams.endTime, 'YYYY/MM/DD')] : []} onChange={(date,dateString)=>{
                             // state.toolbarParams.startTime = dateString[0];
@@ -425,7 +428,7 @@ class component extends Component{
                     }}>查询</Button>
                     
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        window.open(config.SanitationCarAdmin.urls.sanitationCarExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                        window.open(config.urls.exportGarbageLogExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
                     
                 </div>

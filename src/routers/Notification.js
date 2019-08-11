@@ -69,6 +69,7 @@ class component extends Component{
                     { title: '推文内容', dataIndex: 'text', key: 'text', render:(text,record)=>(
                         <a href="javascript:;" onClick={()=>{
                             Modal.info({
+                                width:800,
                                 title:record.headline,
                                 // content:<div style={{wordBreak: 'break-all'}}>{text}</div>
                                 content:<div className="notificationContent" dangerouslySetInnerHTML={{__html:text}} style={{wordBreak: 'break-all'}}></div>

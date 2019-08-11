@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Breadcrumb, Input, Icon, Select, Button, Table, Divider, message, Upload,
         Tag, DatePicker, LocaleProvider, Modal, Form } from 'antd';
+
 import moment from 'moment';
 import zh_CN from 'antd/lib/locale-provider/zh_CN';
 import 'moment/locale/zh-cn';
@@ -181,7 +182,7 @@ class component extends Component{
                         <p style={{textAlign:'center'}}>{text||0}</p>
                         {
                             _this.state.permission.walletAdminList?
-                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                            <p style={{textAlign:'center',marginBottom:0}}><a style={{color:'#1155cc'}} onClick={()=>{
                                 _this.state.integralParams.userId = record.id;
                                 _this.initIntegral({
                                     Modal:{
@@ -192,7 +193,7 @@ class component extends Component{
                         }
                         {
                             _this.state.permission.updateIntegral?
-                            <p style={{textAlign:'center'}}><a style={{color:'#1155cc'}} onClick={()=>{
+                            <p style={{textAlign:'center',marginBottom:0}}><a style={{color:'#1155cc'}} onClick={()=>{
                                 _this.state.Modal.visIntegralValue = true;
                                 _this.state.record = record;
                                 _this.setState({});
@@ -341,7 +342,7 @@ class component extends Component{
                     { title: '回收类别', dataIndex: 'typeName', key: 'typeName' }, 
                     { title: '重量（kg）', dataIndex: 'weight', key: 'weight' },
                     { title: '环保金', dataIndex: 'integral', key: 'integral' },
-                    // { title: '绿色贡献值', dataIndex: 'green', key: 'green' }
+                    { title: '绿色贡献值', dataIndex: 'green', key: 'green' }
                 ],
                 data:[]
             },
@@ -988,13 +989,15 @@ class component extends Component{
                         state.permission.importExcelUser ?
                         <Upload name="file" 
                             style={{display:'inline'}}
-                            fileList={[]}
+                            className="myupdate"
                             headers={{
                                 token:localStorage.getItem('token')
                             }}
                             action="http://118.190.145.65:8888/flockpeak-shop/admin/userAdmin/importExcelUser" 
                             onChange={(info)=>{
-                                message.info('导入成功');
+                                if(info.file.response && info.file.response.code) {
+                                    message.info(info.file.response.msg);
+                                }
                                 _this.initIndex();
                             }}>
                             <Button style={{marginRight:10}} type="primary">数据导入</Button>
@@ -1180,12 +1183,17 @@ class component extends Component{
                     }))
                   }}
                 >
+                    <Form.Item {...formItemLayout} label='用户名'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'name')
+                        }} type="text" value={state.form.name}/>
+                    </Form.Item>
                     <Form.Item {...formItemLayout} label='卡号'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'ickNo')
                         }} type="text" value={state.form.ickNo}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='手机号码'>
+                    <Form.Item {...formItemLayout} label='电话号码'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'tel')
                         }} type="text" value={state.form.tel}/>
@@ -1226,7 +1234,7 @@ class component extends Component{
                             <Select.Option value="2">女</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='公司名称'>
+                    <Form.Item {...formItemLayout} label='所属物业公司'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'companyName')
                         }} type="text" value={state.form.companyName}/>
@@ -1261,7 +1269,7 @@ class component extends Component{
                             _this.updateForm(e.target.value,'plot')
                         }} type="text" value={state.form.plot}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='社区名字'>
+                    <Form.Item {...formItemLayout} label='社区'>
                         <Input onChange={(e)=>{
                             _this.updateForm(e.target.value,'community')
                         }} type="text" value={state.form.community}/>

@@ -21,7 +21,7 @@ import Cascader from '../components/Cascader';
 
 // import { createForm } from 'rc-form';
 import BMap  from 'BMap';
-const BMAP_NORMAL_MAP =window.BMAP_NORMAL_MAP;
+const BMAP_NORMAL_MAP = window.BMAP_NORMAL_MAP;
 const BMAP_HYBRID_MAP = window.BMAP_HYBRID_MAP;
 
 const { RangePicker } = DatePicker;
@@ -61,8 +61,8 @@ class component extends Component{
                     total:0,
                     pageSize:10,
                     onChange(page){
-                        this.state.indexTable.pagination.current = page;
-                        this.initIndex();
+                        _this.state.indexTable.pagination.current = page;
+                        _this.initIndex();
                     }
                 },
                 head:[
@@ -91,7 +91,7 @@ class component extends Component{
 
                                 let point = new BMap.Point(record.lon, record.lat);
 
-                                map.centerAndZoom(point, 12);   //初始化地图,设置中心点坐标和地图级别
+                                map.centerAndZoom(point, 30);   //初始化地图,设置中心点坐标和地图级别
 
                                 let gc = new BMap.Geocoder();
 
@@ -104,7 +104,7 @@ class component extends Component{
                                     let label = new BMap.Label(`
                                         <div>
                                             <p>设备编号：${record.number}</p>
-                                            <p>设备类型：${record.type||''}</p>
+                                            <p>设备类型：${['','办公室回收箱','移动称'][record.type]||''}</p>
                                             <p>权属单位：${record.company}</p>
                                             <p>今日收集垃圾量：${record.weight||''}</p>
                                             <p>实时位置：${record.community}</p>
@@ -335,10 +335,10 @@ class component extends Component{
                 </Breadcrumb>
                 <div className="main-toolbar">
                     
-                    设备类型：<Select value={state.toolbarParams.source} style={{ width: 120, marginRight:10 }} onChange={(value)=>{
+                    设备类型：<Select value={state.toolbarParams.type} style={{ width: 120, marginRight:10 }} onChange={(value)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                source:{
+                                type:{
                                     $set:value    
                                 }
                             }
@@ -351,14 +351,14 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                imei:{
+                                number:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.imei} 
-                    placeholder="请输入种类编号"
-                    addonBefore={<span>种类编号</span>} 
+                    }} value={state.toolbarParams.number} 
+                    placeholder="请输入设备编号"
+                    addonBefore={<span>设备编号</span>} 
                     style={{ width: 200, marginRight: 10, marginBottom:10 }} />
 
                     <Input onChange={(e)=>{
@@ -381,25 +381,25 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                userName:{
+                                section:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.userName} 
+                    }} value={state.toolbarParams.section} 
                     placeholder="请输入辖区部门"
-                    addonBefore={<span>辖区部门</span>} 
+                    addonBefore={<span>辖区管理部门</span>} 
                     style={{ width: 200, marginRight: 10, marginBottom:10 }} />
 
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                tel:{
+                                company:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.tel} 
+                    }} value={state.toolbarParams.company} 
                     placeholder="请输入权属单位"
                     addonBefore={<span>权属单位</span>} 
                     style={{ width: 200, marginRight: 10, marginBottom:10 }} />
@@ -407,12 +407,12 @@ class component extends Component{
                     <Input onChange={(e)=>{
                         update('set',addons(state,{
                             toolbarParams:{
-                                tel:{
+                                adminRole:{
                                     $set:e.target.value
                                 }    
                             }
                         }))
-                    }} value={state.toolbarParams.tel} 
+                    }} value={state.toolbarParams.adminRole} 
                     placeholder="请输入设备管理员"
                     addonBefore={<span>设备管理员</span>} 
                     style={{ width: 200, marginRight: 10, marginBottom:10 }} />
@@ -473,21 +473,7 @@ class component extends Component{
                                     record = el;
                                 }
                             })
-                            _this.state.form = {
-                                pro:record.pro,
-                                city:record.city,
-                                area:record.area,
-                                street:record.street,
-                                className:record.className,
-                                company:record.company,
-                                index:record.index,
-                                lvs:record.lvs,
-                                number:record.number,
-                                price:record.price,
-                                remark:record.remark,
-                                tel:record.tel,
-                                type:record.type,
-                            }
+                            _this.state.form = record;
                             _this.setState({});
                         }}>修改</Button>:''
                     }    
@@ -521,19 +507,22 @@ class component extends Component{
                     }
 
                     <Button style={{marginRight:10}} type="primary" onClick={()=>{
-                        window.open(config.urls.exportGarbageLogExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
+                        window.open(config.urls.exportGarbageExcel+'?token='+localStorage.getItem('token')+formatSearch(state.toolbarParams));
                     }}>数据导出</Button>
 
                     {
                         state.permission.importExcelGarbage ?
                         <Upload name="file" 
                             style={{display:'inline'}}
-                            fileList={[]}
+                            className="myupdate"
                             headers={{ 
                                 token:localStorage.getItem('token')
                             }}
                             action="http://118.190.145.65:8888/flockpeak-shop/admin/garbageAdmin/importExcelGarbage" 
                             onChange={(info)=>{
+                                if(info.file.response && info.file.response.code) {
+                                    message.info(info.file.response.msg);
+                                }
                                 _this.initIndex();
                             }}>
                             <Button style={{marginRight:10}} type="primary">数据导入</Button>
@@ -553,21 +542,24 @@ class component extends Component{
                     }}
                     rowKey={record=>record.id} pagination={state.indexTable.pagination} 
                     columns={state.indexTable.head} dataSource={state.indexTable.data} />
+                
                 <div style={{marginTop:-42,textAlign:'right'}}>
                     <span style={{paddingRight:10}}>共{ state.indexTable.pagination.total }条</span>
                 </div>
 
-                <Modal title="用户信息"
+                <Modal title="设备管理"
                   width = '680px'
+                  cancelText="取消"
+                  okText="确定"
                   visible={state.Modal.visCate}
                   onOk={_this.cate.bind(_this)}
                   onCancel={()=>{
                     update('set',addons(state,{
                         Modal:{visCate:{$set:false}}
                     }))
-                  }}
-                >
-                    <Form.Item {...formItemLayout} label='详细地址'>
+                  }}>
+                    
+                    <Form.Item {...formItemLayout} label='地址'>
                         <Cascader data={state.form} onChange={(data)=>{
                             update('set',addons(state,{
                                 form:{
@@ -579,45 +571,10 @@ class component extends Component{
                             }))
                         }}/>
                     </Form.Item>
-                    <Form.Item {...formItemLayout} label='种类名称'>
+                    <Form.Item {...formItemLayout} label='详细地址'>
                         <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'className')
-                        }} type="text" value={state.form.className}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='权属单位'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'company')
-                        }} type="text" value={state.form.company}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='种类在设备的位置'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'index')
-                        }} type="text" value={state.form.index}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='绿色贡献值'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'lvs')
-                        }} type="text" value={state.form.lvs}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='种类编号'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'number')
-                        }} type="text" value={state.form.number}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='环保金'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'price')
-                        }} type="text" value={state.form.price}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='备注'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'remark')
-                        }} type="text" value={state.form.remark}/>
-                    </Form.Item>
-                    <Form.Item {...formItemLayout} label='电话'>
-                        <Input onChange={(e)=>{
-                            _this.updateForm(e.target.value,'tel')
-                        }} type="text" value={state.form.tel}/>
+                            _this.updateForm(e.target.value,'address')
+                        }} type="text" value={state.form.address}/>
                     </Form.Item>
                     <Form.Item {...formItemLayout} label='设备类型'>
                         <Select onChange={(value)=>{
@@ -627,8 +584,61 @@ class component extends Component{
                             <Select.Option value="2">移动称</Select.Option>
                         </Select>
                     </Form.Item>
+                    <Form.Item {...formItemLayout} label='设备编号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'number')
+                        }} type="text" value={state.form.number}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='IMEI号'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'imei')
+                        }} type="text" value={state.form.imei}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='设备管理员'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'adminRole')
+                        }} type="text" value={state.form.adminRole}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='联系电话'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'tel')
+                        }} type="text" value={state.form.tel}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='温度'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'temperature')
+                        }} type="text" value={state.form.temperature}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='电量'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'electric')
+                        }} type="text" value={state.form.electric}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='装满'>
+                        <Select onChange={(value)=>{
+                            _this.updateForm(value,'distance')
+                        }} style={{width:200}} value={state.form.distance}>
+                            <Select.Option value="1">满</Select.Option>
+                            <Select.Option value="2">空</Select.Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='权属单位'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'company')
+                        }} type="text" value={state.form.company}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='备注'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'remark')
+                        }} type="text" value={state.form.remark}/>
+                    </Form.Item>
+                    <Form.Item {...formItemLayout} label='辖区管理部门'>
+                        <Input onChange={(e)=>{
+                            _this.updateForm(e.target.value,'section')
+                        }} type="text" value={state.form.section}/>
+                    </Form.Item>
                 </Modal>
-                <Modal title="环卫车状态"
+                <Modal title="设备状态"
                    onOk={()=>{
                         
                    }}

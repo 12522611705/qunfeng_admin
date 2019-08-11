@@ -168,7 +168,8 @@ class component extends Component{
                 top:10
             },
             tooltip: {
-                trigger: 'axis'
+                trigger: 'axis',
+                 formatter: "{b} : {c}"
             },
             legend: {
                 top:50,
@@ -197,12 +198,24 @@ class component extends Component{
             series: [{
                 name:'总用户量',
                 type:'line',
-                stack: '总量',
+                stack: '总用户量',
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 data:data.data[0]
             },{
                 name:'新增用户量',
                 type:'line',
-                stack: '总量',
+                stack: '新增用户量',
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 data:data.data[1]
             }]
         };

@@ -145,11 +145,11 @@ class component extends Component{
     fn(params){
         const _this = this;
         _this.props.onChange({
-            pro:_this.state.value.pro,
-            city:_this.state.value.city,
-            area:_this.state.value.area,
-            street:_this.state.value.street,
-            comm:_this.state.value.comm,
+            pro:_this.state.value.pro || '',
+            city:_this.state.value.city || '',
+            area:_this.state.value.area || '',
+            street:_this.state.value.street || '',
+            comm:_this.state.value.comm || '',
             ...params
         });        
     }

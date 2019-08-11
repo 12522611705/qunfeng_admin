@@ -70,8 +70,12 @@ class component extends Component{
                     { title: '老用户总数', dataIndex: 'agedUser', key: 'agedUser'}, 
                     { title: '新增用户总数', dataIndex: 'newUser', key: 'newUser'}, 
                     { title: '用户总数', dataIndex: 'sumUser', key: 'sumUser'}, 
-                    { title: '新增用户占比', dataIndex: 'newUserProportion', key: 'newUserProportion' }, 
-                    { title: '老用户占比', dataIndex: 'agedUserProportion', key: 'agedUserProportion' }
+                    { title: '新增用户占比', dataIndex: 'newUserProportion', key: 'newUserProportion', render:(text)=>(
+                        text.toFixed(2) + '%'
+                    ) }, 
+                    { title: '老用户占比', dataIndex: 'agedUserProportion', key: 'agedUserProportion' , render:(text)=>(
+                        text.toFixed(2) + '%'
+                    ) }
                 ],
                 data:[]
             },
@@ -160,6 +164,12 @@ class component extends Component{
             series: [{
                 data: [data.agedUser,data.newUser],
                 type: 'bar',//配置样式
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 itemStyle: {   
                     //通常情况下：
                     normal:{  
@@ -207,7 +217,7 @@ class component extends Component{
             },
             tooltip : {
                 trigger: 'item',
-                formatter: "{a} <br/>{b} : {c} ({d}%)"
+                formatter: "{a} <br/>{b} : ({d}%)"
             },
             legend: {
                 orient: 'vertical',
@@ -219,9 +229,22 @@ class component extends Component{
                 type: 'pie',
                 radius : '55%',
                 center: ['50%', '60%'],
+                label: {
+                    normal: {
+                        formatter: ' {b|{b}：}{c}',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        rich: {
+                            b: {
+                                fontSize: 16,
+                                lineHeight: 33
+                            }
+                        }
+                    }
+                },
                 data:[
-                    {value:data.newUserProportion, name:'新增用户占比'},
-                    {value:data.agedUserProportion, name:'老用户占比'}
+                    {value:data.newUserProportion.toFixed(2), name:'新增用户占比'},
+                    {value:data.agedUserProportion.toFixed(2), name:'老用户占比'}
                 ]
             }]
         };
@@ -257,7 +280,7 @@ class component extends Component{
             <div className="content">
                 <Breadcrumb>
                     <Breadcrumb.Item>数据统计</Breadcrumb.Item>
-                    <Breadcrumb.Item><a href="javascript:;">活跃和非活跃用户的统计</a></Breadcrumb.Item>
+                    <Breadcrumb.Item><a href="javascript:;">用户数据统计</a></Breadcrumb.Item>
                 </Breadcrumb>
                 
                 <div className="main-toolbar">

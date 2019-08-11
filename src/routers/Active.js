@@ -149,7 +149,7 @@ class component extends Component{
             },
             tooltip : {
                 trigger: 'item',
-                formatter: "{a} <br/>{b} : {c} ({d}%)"
+                formatter: "{b} : {c}"
             },
             xAxis: {
                 type: 'category',
@@ -161,6 +161,12 @@ class component extends Component{
             series: [{
                 data: [data.activeUser,data.noActiveUser],
                 type: 'bar',//配置样式
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'top'
+                    }
+                },
                 itemStyle: {   
                     //通常情况下：
                     normal:{  
@@ -208,7 +214,7 @@ class component extends Component{
             },
             tooltip : {
                 trigger: 'item',
-                formatter: "{a} <br/>{b} : {c} ({d}%)"
+                formatter: "{b} : {c} ({d}%)"
             },
             legend: {
                 orient: 'vertical',
@@ -220,6 +226,19 @@ class component extends Component{
                 type: 'pie',
                 radius : '55%',
                 center: ['50%', '60%'],
+                label: {
+                    normal: {
+                        formatter: ' {b|{b}：}{c}',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        rich: {
+                            b: {
+                                fontSize: 16,
+                                lineHeight: 33
+                            }
+                        }
+                    }
+                },
                 data:[
                     {value:data.activeUserDou, name:'新增用户占比'},
                     {value:data.noActiveUserDou, name:'老用户占比'}

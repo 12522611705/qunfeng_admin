@@ -72,7 +72,7 @@ class component extends Component{
                         ['普通用户','保洁员','物业公司工作人员','街道人员','城管局','司机','公司员工'][text]
                     )},  
                     { title: '电话号码', dataIndex: 'tel', key: 'tel'}, 
-                    { title: '提出余额', dataIndex: 'money', key: 'money'}, 
+                    { title: '提现金额', dataIndex: 'money', key: 'money'}, 
                     { title: '提现', dataIndex: 'account', key: 'account',render:(text,record)=>(
                         _this.state.permission.details ?
                         <a href="javascript:;" onClick={()=>{
@@ -248,7 +248,7 @@ class component extends Component{
             <div className="content">
                 <Breadcrumb>
                     <Breadcrumb.Item>用户管理</Breadcrumb.Item>
-                    <Breadcrumb.Item><a href="javascript:;">身份验证管理</a></Breadcrumb.Item>
+                    <Breadcrumb.Item><a href="javascript:;">提现记录</a></Breadcrumb.Item>
                 </Breadcrumb>
                 <div className="main-toolbar">
 

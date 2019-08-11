@@ -261,6 +261,9 @@
 :global(.notificationContent img){
     max-width: 100%;
 }
+:global(.myupdate .ant-upload-list){
+    display: none;
+}
 .main{
     height: calc(100% - 60px);
     position: relative;
